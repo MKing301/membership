@@ -1,0 +1,29 @@
+<!--  
+1. https://getbootstrap.com
+2. click 'examples'
+3. under 'Framework', click 'Starter templates'
+4. click CTRL+ U (to see code)
+5. Copy 'nav' block
+ -->
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="/">{APP NAME HERE}</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+          <li>
+            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+          </li>
+        </ul>
+        <ul class="navbar-nav right">
+	    {% if session.logged_in %}
+		<li><a class="nav-link" href="/dashboard">Dashboard</a></li>
+		<li><a class="nav-link" href="/report">Attendance Log</a></li>
+ 		<li><a class="nav-link" href="/ages">Member's Age List</a></li>
+ 		<li><a class="nav-link" href="/logout">Logout</a></li>
+	    {% else %}
+                <li><a class="nav-link" href="/register">Register</a></li>
+                <li><a class="nav-link" href="/login">Login</a></li>
+	    {% endif %}	
+	</ul>
+      </div>
+</nav>
