@@ -1,0 +1,8 @@
+body {
+    padding-top: 70px;
+}
+
+.jumbotron {
+    margin: 0 auto;
+    max-width: 100%;
+}
