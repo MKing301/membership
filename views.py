@@ -4,7 +4,7 @@
 """
 
 from membersapp import app
-from forms import RegisterForm
+from forms import RegisterForm, LoginForm
 from flask import render_template, flash, redirect, url_for, request
 
 
@@ -25,3 +25,9 @@ def register():
     form = RegisterForm()
     return render_template('register.html', Title="Register", form=form)
 
+
+# User login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    return render_template('login.html', Title="Login", form=form)
