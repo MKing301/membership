@@ -19,8 +19,12 @@ dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 dict_cur.execute(
     '''CREATE TABLE admins(
         admin_id SERIAL PRIMARY KEY,
+        first_name VARCHAR(50) NOT NULL,
+        last_name VARCHAR(50) NOT NULL,
         username VARCHAR(50) NOT NULL,
-        password VARCHAR(255)
+        email VARCHAR(50) NOT NULL,
+        password VARCHAR(255),
+        role VARCHAR(6) NOT NULL
         )'''
 )
 
