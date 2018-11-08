@@ -24,7 +24,8 @@ dict_cur.execute(
         username VARCHAR(50) NOT NULL,
         email VARCHAR(50) NOT NULL,
         password VARCHAR(255),
-        role VARCHAR(6) NOT NULL
+        role VARCHAR(6) NOT NULL,
+        registered_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )'''
 )
 
