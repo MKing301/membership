@@ -43,6 +43,7 @@ def register():
         # perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
+        # TODO hard-coded role as member for now
         dict_cur.execute(
             '''INSERT INTO admins(
                    first_name,
@@ -63,11 +64,10 @@ def register():
         conn.close()
 
         flash('You are now registered and can log in!', 'success')
-
         return redirect(url_for('login'))
 
     else:
-        return render_template('register.html',Title="Register", form=form)
+        return render_template('register.html', Title="Register", form=form)
 
 
 # User login
