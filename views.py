@@ -81,8 +81,10 @@ def login():
         password_candidate = request.form['password']
 
         # Get a connection
-        conn = psycopg2.connect(database='postgres', user='postgres',
-                                password='o2blJnow!', host='localhost')
+        conn = psycopg2.connect(database='database_name',
+                                user='database_user',
+                                password='database_password',
+                                host='localhost')
         # conn.cursor will return a cursor object, you can use this cursor to
         # perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
@@ -139,7 +141,34 @@ def is_logged_in(f):
 @app.route('/dashboard')
 @is_logged_in
 def dashboard():
-    return render_template('dashboard.html', Title="Dashboard")
+    # Get a connection
+    conn = psycopg2.connect(database='database_name',
+                            user='database_user',
+                            password='database_password',
+                            host='localhost')
+
+    # conn.cursor will return a cursor object, you can use this cursor to
+    # perform queries
+    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Get Members
+    dict_cur.execute("SELECT * FROM members ORDER BY last_name ASC")
+
+    members = dict_cur.fetchall()
+
+    if members:
+        return render_template('dashboard.html',
+                               Title="Dashboard",
+                               members=members)
+
+    else:
+        msg = 'No Members Found'
+        return render_template('dashboard.html',
+                               Title="Dashboard",
+                               msg=msg)
+
+    # Close connection
+    conn.close()
 
 
 # Logout
@@ -147,6 +176,5 @@ def dashboard():
 @is_logged_in
 def logout():
     session.clear()
-    app.logger.info("LOGGED OUT:  Successfully logged out!")
     flash('You are now logged out', 'success')
     return redirect(url_for('login'))
