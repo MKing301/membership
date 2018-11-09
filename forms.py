@@ -20,5 +20,5 @@ class RegisterForm(FlaskForm):
 
 # Login Class
 class LoginForm(FlaskForm):
-    username = StringField('First Name', [validators.DataRequired()])
+    username = StringField('Username', [validators.DataRequired()])
     password = PasswordField('Password', [validators.DataRequired()])
