@@ -3,5 +3,52 @@
 {% block body %}
 <div class="page-content">
   <h4>Dashboard - <small>Welcome {{ session.username }}</small></h4>
-  <p>This will be the dashboard page.</p>
+  <a class="btn btn-succss" href="/add_member">Add Member</a>
+    <hr>
+    <h5>{APP NAME HERE} Member List</h5>
+    <table class="table table-striped">
+    	<tr>
+    		<th>Member ID</th>
+    		<th>First Name</th>
+    		<th>Last Name</th>
+    		<th>Street Number</th>
+    		<th>Streen Name</th>
+    		<th>City</th>
+    		<th>State</th>
+    		<th>Postal Code</th>
+    		<th>Contact Number</th>
+    		<th>Birthdate</th>
+    		<th>Tier</th>
+    		<th>Assigned Elder First Name</th>
+    		<th>Assigned Elder Last Name</th>
+    		<th></th>
+    		<th></th>
+    	</tr>
+    	{% for member in members %}
+    		<tr>
+    			<td>{{member.member_id}}</td>
+    			<td>{{member.first_name}}</td>
+    			<td>{{member.last_name}}</td>
+    			<td>{{member.street_num}}</td>
+    			<td>{{member.street_name}}</td>
+    			<td>{{member.city}}</td>
+    			<td>{{member.state}}</td>
+    			<td>{{member.postal_code}}</td>
+    			<td>{{member.contact_num}}</td>
+    			<td>{{member.birthdate}}</td>
+    			<td>{{member.member_tier}}</td>
+    			<td>{{member.assigned_elder_first_name}}</td>
+    			<td>{{member.assigned_elder_last_name}}</td>
+    			<td><a href="#" class="btn btn-secondary pull-right">Edit</a></td>
+    			<td>
+    				<form action="#" method="POST">
+	    				<input type="hidden" name="_method" value="DELETE"></input>
+	    				<input type="submit" value="Delete" class="btn btn-danger"></input>
+    				</form>
+    			</td>
+    		</tr>
+
+    	{% endfor %}
+    </table>
+<div>
 {% endblock %}
