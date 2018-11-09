@@ -8,8 +8,9 @@ import psycopg2.extras
 from datetime import datetime
 from membersapp import app
 from forms import RegisterForm, LoginForm
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, session
 from passlib.hash import sha256_crypt
+from functools import wraps
 
 
 # Home Page
@@ -74,4 +75,78 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    if form.validate_on_submit():
+        # Get form field
+        username = request.form['username']
+        password_candidate = request.form['password']
+
+        # Get a connection
+        conn = psycopg2.connect(database='postgres', user='postgres',
+                                password='o2blJnow!', host='localhost')
+        # conn.cursor will return a cursor object, you can use this cursor to
+        # perform queries
+        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+        # Get user by username
+        dict_cur.execute("SELECT * FROM admins WHERE username = %s",
+                         [username])
+        data = dict_cur.fetchone()
+
+        if data:
+            # Get stored hash
+            password = data['password']
+
+            # Compare passwords
+            if sha256_crypt.verify(password_candidate, password):
+                # Passed
+                session['username'] = username.upper()
+                if data['role'] == 'admin':
+                    session['logged_in'] = True
+                    # session['username'] = username
+                    flash('You are now logged in', 'success')
+                    return redirect(url_for('dashboard'))
+                else:
+                    flash('Please contact the Database Administrator.',
+                          'danger')
+                    return render_template('login.html', Title="Login", form=form)
+            else:
+                flash('Invalid password.', 'warning')
+                return render_template('login.html', Title="Login", form=form)
+
+        else:
+            flash('Invalid username and/or password!', 'danger')
+            return render_template('login.html', Title="Login", form=form)
+
+        # close connection
+        conn.close()
+
     return render_template('login.html', Title="Login", form=form)
+
+
+# Check if user logged in
+def is_logged_in(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('Unauthorized, Please login', 'danger')
+            return redirect(url_for('login'))
+    return wrap
+
+
+# Dashboard
+@app.route('/dashboard')
+@is_logged_in
+def dashboard():
+    return render_template('dashboard.html', Title="Dashboard")
+
+
+# Logout
+@app.route('/logout')
+@is_logged_in
+def logout():
+    session.clear()
+    app.logger.info("LOGGED OUT:  Successfully logged out!")
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
