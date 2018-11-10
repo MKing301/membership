@@ -6,3 +6,9 @@ body {
     margin: 0 auto;
     max-width: 100%;
 }
+
+.table td.fit, 
+.table th.fit {
+    white-space: nowrap;
+    width: 1%;
+}
