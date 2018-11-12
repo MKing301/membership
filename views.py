@@ -7,7 +7,7 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime
 from membersapp import app
-from forms import RegisterForm, LoginForm
+from forms import RegisterForm, LoginForm, MemberForm
 from flask import render_template, flash, redirect, url_for, request, session
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -169,6 +169,77 @@ def dashboard():
 
     # Close connection
     conn.close()
+
+
+# Add Member
+@app.route('/add_member', methods=['GET', 'POST'])
+@is_logged_in
+def add_member():
+    form = MemberForm()
+    if form.validate_on_submit():
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        street_num = request.form['street_num']
+        street_name = request.form['street_name']
+        city = request.form['city']
+        state = request.form['state']
+        postal_code = request.form['postal_code']
+        contact_num = request.form['contact_num']
+        birthdate = request.form['birthdate']
+        member_tier = request.form['member_tier']
+        assigned_elder_first_name = request.form['assigned_elder_first_name']
+        assigned_elder_last_name = request.form['assigned_elder_last_name']
+
+        # Get a connection
+        conn = psycopg2.connect(database='database_name',
+                                user='database_user',
+                                password='database_password',
+                                host='localhost')
+
+        # conn.cursor will return a cursor object, you can use this cursor to
+        # perform queries
+        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+        # Execute
+        dict_cur.execute(
+            ''' INSERT INTO members (first_name,
+                                     last_name,
+                                     street_num,
+                                     street_name,
+                                     city,
+                                     state,
+                                     postal_code,
+                                     contact_num,
+                                     birthdate,
+                                     member_tier,
+                                     assigned_elder_first_name,
+                                     assigned_elder_last_name)
+                VALUES (
+                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+                        (first_name,
+                         last_name,
+                         street_num,
+                         street_name,
+                         city,
+                         state,
+                         postal_code,
+                         contact_num,
+                         birthdate,
+                         member_tier,
+                         assigned_elder_first_name,
+                         assigned_elder_last_name))
+
+        # Commit
+        conn.commit()
+
+        # Close Connection
+        conn.close()
+
+        flash('Member Added!', 'success')
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('add_member.html', Title="Add Member", form=form)
 
 
 # Logout
