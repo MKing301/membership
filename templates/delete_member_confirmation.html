@@ -1,0 +1,12 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="page-content">
+		<h4>Delete Member Confirmation</h4>
+	  	<p>Are you sure you want to delete {{member_to_delete.first_name}} {{member_to_delete.last_name}}?</p>
+	  	<form action = "{{url_for('finalDelete', member_id=member_to_delete.member_id)}}" method = 'POST'>
+	  		<a href="/dashboard" class="btn btn-secondary">Cancel</a>
+	  		<input type="submit" class="btn btn-primary" value="Delete">
+	  	</form>
+</div>
+{% endblock %}
