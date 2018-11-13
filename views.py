@@ -110,7 +110,8 @@ def login():
                 else:
                     flash('Please contact the Database Administrator.',
                           'danger')
-                    return render_template('login.html', Title="Login", form=form)
+                    return render_template(
+                        'login.html', Title="Login", form=form)
             else:
                 flash('Invalid password.', 'warning')
                 return render_template('login.html', Title="Login", form=form)
@@ -240,6 +241,54 @@ def add_member():
         return redirect(url_for('dashboard'))
 
     return render_template('add_member.html', Title="Add Member", form=form)
+
+
+# Delete Member
+@app.route('/delete_member/<string:member_id>', methods=['GET', 'POST'])
+@is_logged_in
+def deleteMember(member_id):
+    # Get a connection
+    conn = psycopg2.connect(database='database_name',
+                            user='database_user',
+                            password='database_password',
+                            host='localhost')
+
+    # conn.cursor will return a cursor object, you can use this cursor to
+    # perform queries
+    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Execute
+    dict_cur.execute("SELECT * FROM members where member_id = %s", [member_id])
+    member_to_delete = dict_cur.fetchone()
+    return render_template(
+        'delete_member_confirmation.html', member_to_delete=member_to_delete)
+
+
+@app.route('/final_delete/<string:member_id>', methods=['POST'])
+@is_logged_in
+def finalDelete(member_id):
+    # Get a connection
+    conn = psycopg2.connect(database='database_name',
+                            user='database_user',
+                            password='database_password',
+                            host='localhost')
+
+    # conn.cursor will return a cursor object, you can use this cursor to
+    # perform queries
+    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Execute
+    dict_cur.execute("DELETE FROM members where member_id = %s", [member_id])
+
+    # Commit
+    conn.commit()
+
+    # Close Connection
+    conn.close()
+
+    flash('Member Deleted!', 'success')
+
+    return redirect(url_for('dashboard'))
 
 
 # Logout
