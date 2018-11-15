@@ -41,3 +41,11 @@ class MemberForm(FlaskForm):
         'Assigned Elder First Name', [validators.DataRequired()])
     assigned_elder_last_name = StringField(
         'Assigned Elder Last Name', [validators.DataRequired()])
+
+
+# Search Form
+class SearchForm(FlaskForm):
+    search_first_name = StringField(
+        'Search First Name', [validators.DataRequired()])
+    search_last_name = StringField(
+        'Search Last Name', [validators.DataRequired()])
