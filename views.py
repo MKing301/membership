@@ -243,6 +243,109 @@ def add_member():
     return render_template('add_member.html', Title="Add Member", form=form)
 
 
+# Edit Member
+@app.route('/edit_member/<int:member_id>', methods=['GET', 'POST'])
+@is_logged_in
+def edit_member(member_id):
+
+    # Get a connection
+    conn = psycopg2.connect(database='database_name',
+                            user='database_user',
+                            password='database_password',
+                            host='localhost')
+
+    # conn.cursor will return a cursor object, you can use this cursor to
+    # perform queries
+    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Execute
+    dict_cur.execute("SELECT * FROM members where member_id = %s", [member_id])
+
+    member = dict_cur.fetchone()
+
+    # Get form
+    form = MemberForm()
+
+    # Populate member fields
+    form.first_name.data = member['first_name']
+    form.last_name.data = member['last_name']
+    form.street_num.data = member['street_num']
+    form.street_name.data = member['street_name']
+    form.city.data = member['city']
+    form.state.data = member['state']
+    form.postal_code.data = member['postal_code']
+    form.contact_num.data = member['contact_num']
+    form.birthdate.data = member['birthdate']
+    form.member_tier.data = member['member_tier']
+    form.assigned_elder_first_name.data = member['assigned_elder_first_name']
+    form.assigned_elder_last_name.data = member['assigned_elder_last_name']
+
+    if request.method == 'POST' and form.validate():
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        street_num = request.form['street_num']
+        street_name = request.form['street_name']
+        city = request.form['city']
+        state = request.form['state']
+        postal_code = request.form['postal_code']
+        contact_num = request.form['contact_num']
+        birthdate = request.form['birthdate']
+        member_tier = request.form['member_tier']
+        assigned_elder_first_name = request.form['assigned_elder_first_name']
+        assigned_elder_last_name = request.form['assigned_elder_last_name']
+
+        # Get a connection
+        conn = psycopg2.connect(database='database_name',
+                                user='database_user',
+                                password='database_password',
+                                host='localhost')
+
+        # conn.cursor will return a cursor object, you can use this cursor to
+        # perform queries
+        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+        # Execute
+        dict_cur.execute(
+            ''' UPDATE members
+                SET first_name = %s,
+                last_name = %s,
+                street_num = %s,
+                street_name = %s,
+                city = %s,
+                state = %s,
+                postal_code = %s,
+                contact_num = %s,
+                birthdate = %s,
+                member_tier = %s,
+                assigned_elder_first_name = %s,
+                assigned_elder_last_name = %s
+                WHERE member_id = %s''', (first_name,
+                                          last_name,
+                                          street_num,
+                                          street_name,
+                                          city,
+                                          state,
+                                          postal_code,
+                                          contact_num,
+                                          birthdate,
+                                          member_tier,
+                                          assigned_elder_first_name,
+                                          assigned_elder_last_name,
+                                          member[0]))
+
+        # Commit
+        conn.commit()
+
+        # Close Connection
+        conn.close()
+
+        flash('Member Updated!', 'success')
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('edit_member.html', Title="Edit Member", member_id=member[0], form=form)
+
+
 # Delete Member
 @app.route('/delete_member/<string:member_id>', methods=['GET', 'POST'])
 @is_logged_in
