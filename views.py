@@ -7,7 +7,7 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime
 from membersapp import app
-from forms import RegisterForm, LoginForm, MemberForm
+from forms import RegisterForm, LoginForm, MemberForm, SearchForm
 from flask import render_template, flash, redirect, url_for, request, session
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -36,9 +36,9 @@ def register():
         password = sha256_crypt.hash(str(request.form['password']))
 
         # Get a connection
-        conn = psycopg2.connect(database='database_name',
-                                user='database_user',
-                                password='database_password',
+        conn = psycopg2.connect(database='postgres',
+                                user='postgres',
+                                password='o2blJnow!',
                                 host='localhost')
         # conn.cursor will return a cursor object, you can use this cursor to
         # perform queries
@@ -81,9 +81,9 @@ def login():
         password_candidate = request.form['password']
 
         # Get a connection
-        conn = psycopg2.connect(database='database_name',
-                                user='database_user',
-                                password='database_password',
+        conn = psycopg2.connect(database='postgres',
+                                user='postgres',
+                                password='o2blJnow!',
                                 host='localhost')
         # conn.cursor will return a cursor object, you can use this cursor to
         # perform queries
@@ -143,9 +143,9 @@ def is_logged_in(f):
 @is_logged_in
 def dashboard():
     # Get a connection
-    conn = psycopg2.connect(database='database_name',
-                            user='database_user',
-                            password='database_password',
+    conn = psycopg2.connect(database='postgres',
+                            user='postgres',
+                            password='o2blJnow!',
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
@@ -172,6 +172,53 @@ def dashboard():
     conn.close()
 
 
+# Search for Member(s)
+@app.route('/search', methods=['GET', 'POST'])
+@is_logged_in
+def search():
+    form = SearchForm()
+    if form.validate_on_submit():
+        search_first_name = request.form['search_first_name'].capitalize()
+        search_last_name = request.form['search_last_name'].capitalize()
+
+        # Get a connection
+        conn = psycopg2.connect(database='postgres',
+                                user='postgres',
+                                password='o2blJnow!',
+                                host='localhost')
+
+        # conn.cursor will return a cursor object, you can use this cursor to
+        # perform queries
+        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+        # Get Members
+        dict_cur.execute(
+            '''SELECT * FROM members
+               WHERE first_name like %s
+               AND last_name like %s
+               ORDER BY last_name ASC''', (
+                ('%' + search_first_name + '%'),
+                ('%' + search_last_name + '%')))
+
+        members = dict_cur.fetchall()
+
+        if members:
+            return render_template('dashboard.html',
+                                   Title="Dashboard",
+                                   members=members)
+
+        else:
+            msg = 'No Members Found'
+            return render_template('dashboard.html',
+                                   Title="Dashboard",
+                                   msg=msg)
+
+        # Close connection
+        conn.close()
+
+    return render_template('search.html', Title="Search", form=form)
+
+
 # Add Member
 @app.route('/add_member', methods=['GET', 'POST'])
 @is_logged_in
@@ -192,9 +239,9 @@ def add_member():
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
         # Get a connection
-        conn = psycopg2.connect(database='database_name',
-                                user='database_user',
-                                password='database_password',
+        conn = psycopg2.connect(database='postgres',
+                                user='postgres',
+                                password='o2blJnow!',
                                 host='localhost')
 
         # conn.cursor will return a cursor object, you can use this cursor to
@@ -249,9 +296,9 @@ def add_member():
 def edit_member(member_id):
 
     # Get a connection
-    conn = psycopg2.connect(database='database_name',
-                            user='database_user',
-                            password='database_password',
+    conn = psycopg2.connect(database='postgres',
+                            user='postgres',
+                            password='o2blJnow!',
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
@@ -295,9 +342,9 @@ def edit_member(member_id):
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
         # Get a connection
-        conn = psycopg2.connect(database='database_name',
-                                user='database_user',
-                                password='database_password',
+        conn = psycopg2.connect(database='postgres',
+                                user='postgres',
+                                password='o2blJnow!',
                                 host='localhost')
 
         # conn.cursor will return a cursor object, you can use this cursor to
@@ -351,9 +398,9 @@ def edit_member(member_id):
 @is_logged_in
 def deleteMember(member_id):
     # Get a connection
-    conn = psycopg2.connect(database='database_name',
-                            user='database_user',
-                            password='database_password',
+    conn = psycopg2.connect(database='postgres',
+                            user='postgres',
+                            password='o2blJnow!',
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
@@ -371,9 +418,9 @@ def deleteMember(member_id):
 @is_logged_in
 def finalDelete(member_id):
     # Get a connection
-    conn = psycopg2.connect(database='database_name',
-                            user='database_user',
-                            password='database_password',
+    conn = psycopg2.connect(database='postgres',
+                            user='postgres',
+                            password='o2blJnow!',
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
