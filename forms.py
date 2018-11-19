@@ -10,6 +10,22 @@ from wtforms import validators
 
 # Register Class
 class RegisterForm(FlaskForm):
+    """[summary.
+
+    [description]
+
+    Extends:
+        FlaskForm
+
+    Variables:
+        first_name {[type]} -- [description]
+        last_name {[type]} -- [description]
+        username {[type]} -- [description]
+        email {[type]} -- [description]
+        password {[type]} -- [description]
+        confirm {[type]} -- [description]
+    """
+
     first_name = StringField('First Name', [validators.Length(min=2, max=50)])
     last_name = StringField('Last Name', [validators.Length(min=2, max=50)])
     username = StringField('Username', [validators.Length(min=4, max=25)])
@@ -21,12 +37,46 @@ class RegisterForm(FlaskForm):
 
 # Login Class
 class LoginForm(FlaskForm):
+    """[summary.
+
+    [description]
+
+    Extends:
+        FlaskForm
+
+    Variables:
+        username {[type]} -- [description]
+        password {[type]} -- [description]
+    """
+
     username = StringField('Username', [validators.DataRequired()])
     password = PasswordField('Password', [validators.DataRequired()])
 
 
 # Member Form Class
 class MemberForm(FlaskForm):
+    """[summary.
+
+    [description]
+
+    Extends:
+        FlaskForm
+
+    Variables:
+        first_name {[type]} -- [description]
+        last_name {[type]} -- [description]
+        street_num {[type]} -- [description]
+        street_name {[type]} -- [description]
+        city {[type]} -- [description]
+        state {[type]} -- [description]
+        postal_code {[type]} -- [description]
+        contact_num {[type]} -- [description]
+        birthdate {[type]} -- [description]
+        member_tier {[type]} -- [description]
+        assigned_elder_first_name {[type]} -- [description]
+        assigned_elder_last_name {[type]} -- [description]
+    """
+
     first_name = StringField('First Name', [validators.DataRequired()])
     last_name = StringField('Last Name', [validators.DataRequired()])
     street_num = StringField('Street Number', [validators.DataRequired()])
@@ -45,6 +95,18 @@ class MemberForm(FlaskForm):
 
 # Search Form
 class SearchForm(FlaskForm):
+    """[summary.
+
+    [description]
+
+    Extends:
+        FlaskForm
+
+    Variables:
+        search_first_name {[type]} -- [description]
+        search_last_name {[type]} -- [description]
+    """
+
     search_first_name = StringField(
         'Search First Name', [validators.DataRequired()])
     search_last_name = StringField(

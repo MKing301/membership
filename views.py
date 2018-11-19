@@ -16,7 +16,7 @@ from functools import wraps
 # Home Page
 @app.route('/')
 def index():
-    """This is the route for the home screen.
+    """The route for the home screen.
 
     Returns:
     Render template for home page with title of page
@@ -27,6 +27,16 @@ def index():
 # User register
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    """.
+
+    [description]
+
+    Decorators:
+        app.route
+
+    Returns:
+        [type] -- [description]
+    """
     form = RegisterForm()
     if form.validate_on_submit():
         first_name = request.form['first_name']
@@ -74,6 +84,16 @@ def register():
 # User login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """.
+
+    [description]
+
+    Decorators:
+        app.route
+
+    Returns:
+        [type] -- [description]
+    """
     form = LoginForm()
     if form.validate_on_submit():
         # Get form field
@@ -128,6 +148,19 @@ def login():
 
 # Check if user logged in
 def is_logged_in(f):
+    """.
+
+    [description]
+
+    Decorators:
+        wraps
+
+    Arguments:
+        f {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
     @wraps(f)
     def wrap(*args, **kwargs):
         if 'logged_in' in session:
@@ -142,6 +175,17 @@ def is_logged_in(f):
 @app.route('/dashboard')
 @is_logged_in
 def dashboard():
+    """[summary.
+
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Returns:
+        [type] -- [description]
+    """
     # Get a connection
     conn = psycopg2.connect(database='postgres',
                             user='postgres',
@@ -176,6 +220,17 @@ def dashboard():
 @app.route('/search', methods=['GET', 'POST'])
 @is_logged_in
 def search():
+    """[summary.
+
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Returns:
+        [type] -- [description]
+    """
     form = SearchForm()
     if form.validate_on_submit():
         search_first_name = request.form['search_first_name'].capitalize()
@@ -223,6 +278,17 @@ def search():
 @app.route('/add_member', methods=['GET', 'POST'])
 @is_logged_in
 def add_member():
+    """.
+
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Returns:
+        [type] -- [description]
+    """
     form = MemberForm()
     if form.validate_on_submit():
         first_name = request.form['first_name']
@@ -294,7 +360,20 @@ def add_member():
 @app.route('/edit_member/<int:member_id>', methods=['GET', 'POST'])
 @is_logged_in
 def edit_member(member_id):
+    """The edit member route.
 
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Arguments:
+        member_id {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
     # Get a connection
     conn = psycopg2.connect(database='postgres',
                             user='postgres',
@@ -390,13 +469,28 @@ def edit_member(member_id):
 
         return redirect(url_for('dashboard'))
 
-    return render_template('edit_member.html', Title="Edit Member", member_id=member[0], form=form)
+    return render_template('edit_member.html',
+                           Title="Edit Member", member_id=member[0], form=form)
 
 
 # Delete Member
 @app.route('/delete_member/<string:member_id>', methods=['GET', 'POST'])
 @is_logged_in
-def deleteMember(member_id):
+def delete_member(member_id):
+    """The delete member route.
+
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Arguments:
+        member_id {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
     # Get a connection
     conn = psycopg2.connect(database='postgres',
                             user='postgres',
@@ -416,7 +510,21 @@ def deleteMember(member_id):
 
 @app.route('/final_delete/<string:member_id>', methods=['POST'])
 @is_logged_in
-def finalDelete(member_id):
+def final_delete(member_id):
+    """[summary.
+
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Arguments:
+        member_id {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
     # Get a connection
     conn = psycopg2.connect(database='postgres',
                             user='postgres',
@@ -445,6 +553,17 @@ def finalDelete(member_id):
 @app.route('/logout')
 @is_logged_in
 def logout():
+    """The route to log out of the application.
+
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Returns:
+        [type] -- [description]
+    """
     session.clear()
     flash('You are now logged out', 'success')
     return redirect(url_for('login'))
