@@ -7,6 +7,7 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime
 from membersapp import app
+from helpers import get_age
 from forms import RegisterForm, LoginForm, MemberForm, SearchForm
 from flask import render_template, flash, redirect, url_for, request, session
 from passlib.hash import sha256_crypt
@@ -547,6 +548,57 @@ def final_delete(member_id):
     flash('Member Deleted!', 'success')
 
     return redirect(url_for('dashboard'))
+
+
+# Ages
+@app.route('/ages')
+@is_logged_in
+def ages():
+
+    # Get a connection
+    conn = psycopg2.connect(database='postgres',
+                            user='postgres',
+                            password='o2blJnow!',
+                            host='localhost')
+
+    # conn.cursor will return a cursor object, you can use this cursor to
+    # perform queries
+    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # cur = conn.cursor() ---> used to return tuple
+
+    # execute query
+    # dict_cur.execute('SELECT * FROM log ORDER BY date_time DESC')
+    dict_cur.execute('''SELECT
+                            first_name,
+                            last_name,
+                            extract(month from birthdate) AS month,
+                            extract(day from birthdate) AS day,
+                            extract(year from birthdate) AS year
+                        FROM members
+                        ORDER BY first_name''')
+    # dict_cur.execute('select users.first_name, users.last_name,
+    # log.date_time from users, log where users.rfidtag= log.rfidtag ORDER BY
+    # log.date_time DESC')
+
+    members_ages = dict_cur.fetchall()
+    if members_ages is not None:
+        birthdate_dict = {}
+        birthdate_dict = {(member_age[1] + ", " + member_age[0]): str(get_age(int(member_age[2]),
+                          int(member_age[3]), int(member_age[4])))
+                          for member_age in members_ages}
+        birthdate_dict_sorted = sorted(birthdate_dict.items())
+        return render_template('ages.html',
+                               Title="Member's Age",
+                               birthdate_dict_sorted=birthdate_dict_sorted)
+
+    else:
+        msg = 'No members; therefore, no ages displayed.'
+        return render_template('ages.html', Title="Member's Age", msg=msg)
+
+    # Close the communication with the PostgreSQL database
+    dict_cur.close()
+    conn.close()
 
 
 # Logout
