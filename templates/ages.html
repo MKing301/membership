@@ -1,0 +1,23 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="page-content">
+	<h4>Member's Age</h4>
+		<table class="table table-striped">
+	    <thead>
+	      <tr>
+	        <th>Name</th>
+	        <th>Age</th>
+	      </tr>
+	    </thead>
+	    <tbody>
+	      {% for name, age in birthdate_dict_sorted: %}
+		      <tr>
+		        <td>{{ name }}</td>
+		        <td>{{ age }}</td>
+		      </tr>
+	      {% endfor %}
+	    </tbody>
+	  </table>
+<div>
+{% endblock %}
