@@ -98,7 +98,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         # Get form field
-        username = request.form['username']
+        email = request.form['email']
         password_candidate = request.form['password']
 
         # Get a connection
@@ -111,8 +111,8 @@ def login():
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         # Get user by username
-        dict_cur.execute("SELECT * FROM admins WHERE username = %s",
-                         [username])
+        dict_cur.execute("SELECT * FROM admins WHERE email = %s",
+                         [email])
         data = dict_cur.fetchone()
 
         if data:
@@ -122,10 +122,10 @@ def login():
             # Compare passwords
             if sha256_crypt.verify(password_candidate, password):
                 # Passed
-                session['username'] = username.upper()
+                session['email'] = email.upper()
+                session['username'] = data['username'].upper()
                 if data['role'] == 'admin':
                     session['logged_in'] = True
-                    # session['username'] = username
                     flash('You are now logged in', 'success')
                     return redirect(url_for('dashboard'))
                 else:
@@ -584,8 +584,10 @@ def ages():
     members_ages = dict_cur.fetchall()
     if members_ages is not None:
         birthdate_dict = {}
-        birthdate_dict = {(member_age[1] + ", " + member_age[0]): str(get_age(int(member_age[2]),
-                          int(member_age[3]), int(member_age[4])))
+        birthdate_dict = {(member_age[1] + ", " + member_age[0]): str(get_age(
+                          int(member_age[2]),
+                          int(member_age[3]),
+                          int(member_age[4])))
                           for member_age in members_ages}
         birthdate_dict_sorted = sorted(birthdate_dict.items())
         return render_template('ages.html',
