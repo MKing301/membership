@@ -1,0 +1,36 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="page-content">
+    <hr>
+    <h5>{APP NAME HERE} Admin List</h5>
+    <table class="table table-striped">
+    	<tr>
+    		<th class="fit">Admin ID</th>
+    		<th class="fit">First Name</th>
+    		<th class="fit">Last Name</th>
+    		<th class="fit">Username</th>
+    		<th class="fit">Email</th>
+    		<th class="fit">Role</th>
+            <th class="fit">Toggle Role</th>
+    	</tr>
+    	{% for admin in admins %}
+		<tr>
+			<td class="fit">{{admin.admin_id}}</td>
+			<td class="fit">{{admin.first_name}}</td>
+			<td class="fit">{{admin.last_name}}</td>
+			<td class="fit">{{admin.username}}</td>
+			<td class="fit">{{admin.email}}</td>
+            <td class="fit">{{admin.role}}</td>
+			<td class="fit">
+                <form action="{{url_for('update_role', admin_id=admin.admin_id, role=admin.role)}}" method="POST">
+                    <input type="hidden" name="_method" value="Toggle"></input>
+                    <input type="submit" value="Toggle" class="btn btn-primary btn-sm"></input>
+                </form>
+            </td>
+		</tr>
+
+    	{% endfor %}
+    </table>
+<div>
+{% endblock %}
