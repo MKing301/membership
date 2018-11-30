@@ -55,7 +55,7 @@ def register():
         # perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-        # TODO hard-coded role as member for now
+        # TODO hard-coded role as pending for now
         dict_cur.execute(
             '''INSERT INTO admins(
                    first_name,
@@ -67,7 +67,7 @@ def register():
                    registered_date)
                VALUES(%s, %s, %s, %s, %s, %s, %s)
                ''', (first_name, last_name, username, email, password,
-                     'member', datetime.now()))
+                     'pending', datetime.now()))
 
         # commit to db
         conn.commit()
@@ -215,6 +215,92 @@ def dashboard():
 
     # Close connection
     conn.close()
+
+
+# Admin
+@app.route('/admin')
+@is_logged_in
+def admin():
+    """[summary.
+
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Returns:
+        [type] -- [description]
+    """
+    # Get a connection
+
+    conn = psycopg2.connect(database='postgres',
+                            user='postgres',
+                            password='o2blJnow!',
+                            host='localhost')
+
+    # conn.cursor will return a cursor object, you can use this cursor to
+    # perform queries
+    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Get Members
+    dict_cur.execute("SELECT * FROM admins ORDER BY last_name ASC")
+
+    admins = dict_cur.fetchall()
+
+    if admins:
+        return render_template('admin.html',
+                               Title="Admins",
+                               admins=admins)
+
+    else:
+        msg = 'No Members Found'
+        return render_template('admin.html',
+                               Title="Admin",
+                               msg=msg)
+
+    # Close connection
+    conn.close()
+
+
+# Update role
+@app.route('/update_role/<string:admin_id>/role/<string:role>', methods=['GET', 'POST'])
+@is_logged_in
+def update_role(admin_id, role):
+    if request.method == 'POST':
+        if role == 'pending':
+            role = 'admin'
+        else:
+            role = 'pending'
+        # Get a connection
+        conn = psycopg2.connect(database='postgres',
+                                user='postgres',
+                                password='o2blJnow!',
+                                host='localhost')
+
+        # conn.cursor will return a cursor object, you can use this cursor to
+        # perform queries
+        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+        # Execute
+
+        dict_cur.execute(
+            ''' UPDATE admins
+                SET role = %s
+                WHERE admin_id = %s''', (role, admin_id))
+
+        # Commit
+        conn.commit()
+
+        # Close Connection
+        conn.close()
+
+        flash('Role Updated!', 'success')
+
+        return redirect(url_for('admin'))
+
+    return render_template('admin.html',
+                           Title="Admin", admin_id=admin_id)
 
 
 # Search for Member(s)
