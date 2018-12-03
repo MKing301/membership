@@ -264,9 +264,24 @@ def admin():
 
 
 # Update role
-@app.route('/update_role/<string:admin_id>/role/<string:role>', methods=['GET', 'POST'])
+@app.route('/update_role/<string:admin_id>/role/<string:role>',
+           methods=['GET', 'POST'])
 @is_logged_in
 def update_role(admin_id, role):
+    """[summary].
+
+    [description]
+
+    Decorators:
+        is_logged_in
+
+    Arguments:
+        admin_id {[type]} -- [description]
+        role {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
     if request.method == 'POST':
         if role == 'pending':
             role = 'admin'
@@ -640,7 +655,17 @@ def final_delete(member_id):
 @app.route('/ages')
 @is_logged_in
 def ages():
+    """[summary].
 
+    [description]
+
+    Decorators:
+        app.route
+        is_logged_in
+
+    Returns:
+        [type] -- [description]
+    """
     # Get a connection
     conn = psycopg2.connect(database='postgres',
                             user='postgres',
