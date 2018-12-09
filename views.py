@@ -8,7 +8,8 @@ import psycopg2.extras
 from datetime import datetime
 from membersapp import app
 from helpers import get_age
-from forms import RegisterForm, LoginForm, MemberForm, SearchForm
+from forms import (RegisterForm, LoginForm, MemberForm, SearchForm,
+                   ResetRequestForm, ResetPasswordForm)
 from flask import render_template, flash, redirect, url_for, request, session
 from passlib.hash import sha256_crypt
 from functools import wraps
@@ -145,6 +146,114 @@ def login():
         conn.close()
 
     return render_template('login.html', Title="Login", form=form)
+
+
+# Reset Request Form
+@app.route('/reset_request', methods=['GET', 'POST'])
+def reset_request():
+    """.
+
+    [description]
+
+    Decorators:
+        app.route
+
+    Returns:
+        [type] -- [description]
+    """
+    try:
+        if session['email']:
+            flash('You must log out before resetting password!', 'warning')
+            return redirect(url_for('dashboard'))
+    except:
+        form = ResetRequestForm()
+        if form.validate_on_submit():
+            # Get form field
+            email = request.form['email']
+            # Get a connection
+            conn = psycopg2.connect(database='postgres',
+                                    user='postgres',
+                                    password='o2blJnow!',
+                                    host='localhost')
+            # conn.cursor will return a cursor object, you can use this cursor
+            # to perform queries
+            dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+            # Check to see if email exist
+            dict_cur.execute("SELECT * FROM admins WHERE email = %s",
+                             [email])
+            data = dict_cur.fetchone()
+
+            if data is None:
+                flash('There is no account with that email.',
+                      'warning')
+                return render_template('reset_request.html',
+                                       Title="Request Password Reset",
+                                       form=form)
+
+            else:
+                return redirect(url_for('reset_password'))
+
+            # close connection
+            conn.close()
+
+    return render_template('reset_request.html',
+                           Title="Request Password Reset",
+                           form=form)
+
+
+# Reset Password Form
+@app.route('/reset_password', methods=['GET', 'POST'])
+def reset_password():
+    """.
+
+    [description]
+
+    Decorators:
+        app.route
+
+    Returns:
+        [type] -- [description]
+    """
+    try:
+        if session['email']:
+            flash('You must log out before resetting password!', 'warning')
+            return redirect(url_for('dashboard'))
+    except:
+        form = ResetPasswordForm()
+        if form.validate_on_submit():
+            # Get form field
+            # Get form field
+            password = request.form['password']
+            confirm = request.form['confirm']
+
+            return redirect(url_for('reset_token'))
+
+        else:
+            return render_template('reset_password.html',
+                                   Title="Request Password Reset",
+                                   form=form)
+
+
+# Reset Password Form
+@app.route('/reset_token', methods=['GET', 'POST'])
+def reset_token():
+    """[summary].
+
+    [description]
+
+    Decorators:
+        app.route
+
+    Returns:
+        [type] -- [description]
+    """
+    try:
+        if session['email']:
+            flash('You must log out before resetting password!', 'warning')
+            return redirect(url_for('dashboard'))
+    except:
+        return render_template('reset_token.html', Title="Reset Token")
 
 
 # Check if user logged in
