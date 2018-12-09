@@ -111,3 +111,39 @@ class SearchForm(FlaskForm):
         'Search First Name', [validators.DataRequired()])
     search_last_name = StringField(
         'Search Last Name', [validators.DataRequired()])
+
+
+# Form to Request Reset of Password
+class ResetRequestForm(FlaskForm):
+    """[summary].
+
+    [description]
+
+    Extends:
+        FlaskForm
+
+    Variables:
+        email {[type]} -- [description]
+    """
+
+    email = StringField('Email', [validators.DataRequired()])
+
+
+# Form to Request Password Reset
+class ResetPasswordForm(FlaskForm):
+    """[summary].
+
+    [description]
+
+    Extends:
+        FlaskForm
+
+    Variables:
+        password {[type]} -- [description]
+        confirm {[type]} -- [description]
+    """
+
+    password = PasswordField('Password', [validators.DataRequired(),
+                             validators.equal_to('confirm',
+                             message='Passwords do not match.')])
+    confirm = PasswordField('Confirm Password')
