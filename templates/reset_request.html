@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="page-content">
+  <center><h4>Request Password Reset</h4></center>
+  {% from "includes/_formhelpers.html" import render_field %}
+  <form action="{{ url_for('reset_request') }}" method="POST">
+    {{ form.csrf_token }}
+    <div class="form-group">
+        {{render_field(form.email, class_="form-control")}}
+    </div>
+    <center><button type="submit" class="btn btn-primary">Request Password Reset</button></center>
+  </form>
+  <div>
+{% endblock %}
