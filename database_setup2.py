@@ -4,13 +4,14 @@ This module will establish the new table in the database for the membership
 app for admins.
 """
 
+import os
 import psycopg2
 import psycopg2.extras
 
 # Get a connection
-conn = psycopg2.connect(database='database_name',
-                        user='database_user',
-                        password='database_password',
+conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                        user=os.environ.get('DB_USER'),
+                        password=os.environ.get('DB_PASSWORD'),
                         host='localhost')
 # conn.cursor will return a cursor object, you can use this cursor to
 # perform queries
