@@ -3,14 +3,16 @@
 [description]
 """
 
+import os
 import psycopg2
 import psycopg2.extras
 from datetime import datetime
-from membersapp import app
-from helpers import get_age
+from membersapp import app, mail
+from helpers import get_age, get_reset_token, verify_reset_token
 from forms import (RegisterForm, LoginForm, MemberForm, SearchForm,
                    ResetRequestForm, ResetPasswordForm)
 from flask import render_template, flash, redirect, url_for, request, session
+from flask_mail import Message
 from passlib.hash import sha256_crypt
 from functools import wraps
 
@@ -48,9 +50,9 @@ def register():
         password = sha256_crypt.hash(str(request.form['password']))
 
         # Get a connection
-        conn = psycopg2.connect(database='postgres',
-                                user='postgres',
-                                password='o2blJnow!',
+        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                user=os.environ.get('DB_USER'),
+                                password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
         # conn.cursor will return a cursor object, you can use this cursor to
         # perform queries
@@ -103,9 +105,9 @@ def login():
         password_candidate = request.form['password']
 
         # Get a connection
-        conn = psycopg2.connect(database='postgres',
-                                user='postgres',
-                                password='o2blJnow!',
+        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                user=os.environ.get('DB_USER'),
+                                password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
         # conn.cursor will return a cursor object, you can use this cursor to
         # perform queries
@@ -148,7 +150,7 @@ def login():
     return render_template('login.html', Title="Login", form=form)
 
 
-# Reset Request Form
+# Reset Request Form @ 22:27
 @app.route('/reset_request', methods=['GET', 'POST'])
 def reset_request():
     """.
@@ -171,40 +173,57 @@ def reset_request():
             # Get form field
             email = request.form['email']
             # Get a connection
-            conn = psycopg2.connect(database='postgres',
-                                    user='postgres',
-                                    password='o2blJnow!',
+            conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                    user=os.environ.get('DB_USER'),
+                                    password=os.environ.get('DB_PASSWORD'),
                                     host='localhost')
             # conn.cursor will return a cursor object, you can use this cursor
             # to perform queries
             dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            try:
+                # Check to see if email exist
+                dict_cur.execute("SELECT * FROM admins WHERE email = %s",
+                                 [email])
+                data = dict_cur.fetchone()
+                user = data['email']
+                user_id = data['admin_id']
 
-            # Check to see if email exist
-            dict_cur.execute("SELECT * FROM admins WHERE email = %s",
-                             [email])
-            data = dict_cur.fetchone()
+                if data is None:
+                    flash('There is no account with that email.',
+                          'warning')
+                    return render_template('reset_request.html',
+                                           Title="Request Password Reset",
+                                           form=form)
 
-            if data is None:
-                flash('There is no account with that email.',
-                      'warning')
-                return render_template('reset_request.html',
-                                       Title="Request Password Reset",
-                                       form=form)
+                else:
+                    token = get_reset_token(user, user_id)
+                    msg = Message(subject='Reset Password ',
+                                  sender=os.environ.get('MAIL_USERNAME'),
+                                  recipients=[user])
+                    msg.body = f'''To reset your password, visit the following
+link: {url_for('reset_password', token=token, _external=True)}
 
-            else:
-                return redirect(url_for('reset_password'))
+If you did not make this request, then simply ignore this email and
+no changes will be made.
+'''
+                    mail.send(msg)
+                    flash('''An email has been sent with instructions to reset your
+                          password''', 'info')
+                    return redirect(url_for('login'))
 
-            # close connection
-            conn.close()
+                    # close connection
+                    conn.close()
+            except:
+                flash('There is no account with that email.', 'warning')
 
     return render_template('reset_request.html',
                            Title="Request Password Reset",
                            form=form)
 
 
-# Reset Password Form
-@app.route('/reset_password', methods=['GET', 'POST'])
-def reset_password():
+# Reset Password Form @ 18:33 / 34:08
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
     """.
 
     [description]
@@ -220,40 +239,48 @@ def reset_password():
             flash('You must log out before resetting password!', 'warning')
             return redirect(url_for('dashboard'))
     except:
-        form = ResetPasswordForm()
-        if form.validate_on_submit():
-            # Get form field
-            # Get form field
-            password = request.form['password']
-            confirm = request.form['confirm']
-
-            return redirect(url_for('reset_token'))
-
+        # TODO verify token (see time @ 6:18)
+        user = verify_reset_token(token)
+        if user is None:
+            flash('That is an invalid or expired token.', 'warning')
+            return redirect(url_for('reset_request'))
         else:
-            return render_template('reset_password.html',
-                                   Title="Request Password Reset",
-                                   form=form)
+            form = ResetPasswordForm()
+            if form.validate_on_submit():
+                # Get form field
+                password = request.form['password']
+                print(password)
+                confirm = request.form['confirm']
 
+                # TODO (see time @ 34:13)
+                new_password = sha256_crypt.hash(str(password))
+                print(new_password)
 
-# Reset Password Form
-@app.route('/reset_token', methods=['GET', 'POST'])
-def reset_token():
-    """[summary].
+                # Get a connection
+                conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                        user=os.environ.get('DB_USER'),
+                                        password=os.environ.get('DB_PASSWORD'),
+                                        host='localhost')
+                # conn.cursor will return a cursor object, you can use this cursor
+                # to perform queries
+                dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    [description]
+                dict_cur.execute(''' UPDATE admins
+                                 SET password = %s
+                                 WHERE email = %s''', (new_password, user))
 
-    Decorators:
-        app.route
+                # Commit
+                conn.commit()
 
-    Returns:
-        [type] -- [description]
-    """
-    try:
-        if session['email']:
-            flash('You must log out before resetting password!', 'warning')
-            return redirect(url_for('dashboard'))
-    except:
-        return render_template('reset_token.html', Title="Reset Token")
+                # Close Connection
+                conn.close()
+
+                flash('Your password has been updated.', 'success')
+                return redirect(url_for('login'))
+            else:
+                return render_template('reset_password.html',
+                                       Title='Reset Password',
+                                       form=form)
 
 
 # Check if user logged in
@@ -297,9 +324,9 @@ def dashboard():
         [type] -- [description]
     """
     # Get a connection
-    conn = psycopg2.connect(database='postgres',
-                            user='postgres',
-                            password='o2blJnow!',
+    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                            user=os.environ.get('DB_USER'),
+                            password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
@@ -343,9 +370,9 @@ def admin():
     """
     # Get a connection
 
-    conn = psycopg2.connect(database='postgres',
-                            user='postgres',
-                            password='o2blJnow!',
+    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                            user=os.environ.get('DB_USER'),
+                            password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
@@ -397,9 +424,9 @@ def update_role(admin_id, role):
         else:
             role = 'pending'
         # Get a connection
-        conn = psycopg2.connect(database='postgres',
-                                user='postgres',
-                                password='o2blJnow!',
+        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                user=os.environ.get('DB_USER'),
+                                password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
 
         # conn.cursor will return a cursor object, you can use this cursor to
@@ -448,9 +475,9 @@ def search():
         search_last_name = request.form['search_last_name'].capitalize()
 
         # Get a connection
-        conn = psycopg2.connect(database='postgres',
-                                user='postgres',
-                                password='o2blJnow!',
+        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                user=os.environ.get('DB_USER'),
+                                password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
 
         # conn.cursor will return a cursor object, you can use this cursor to
@@ -516,9 +543,9 @@ def add_member():
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
         # Get a connection
-        conn = psycopg2.connect(database='postgres',
-                                user='postgres',
-                                password='o2blJnow!',
+        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                user=os.environ.get('DB_USER'),
+                                password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
 
         # conn.cursor will return a cursor object, you can use this cursor to
@@ -586,9 +613,9 @@ def edit_member(member_id):
         [type] -- [description]
     """
     # Get a connection
-    conn = psycopg2.connect(database='postgres',
-                            user='postgres',
-                            password='o2blJnow!',
+    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                            user=os.environ.get('DB_USER'),
+                            password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
@@ -632,9 +659,9 @@ def edit_member(member_id):
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
         # Get a connection
-        conn = psycopg2.connect(database='postgres',
-                                user='postgres',
-                                password='o2blJnow!',
+        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                user=os.environ.get('DB_USER'),
+                                password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
 
         # conn.cursor will return a cursor object, you can use this cursor to
@@ -703,9 +730,9 @@ def delete_member(member_id):
         [type] -- [description]
     """
     # Get a connection
-    conn = psycopg2.connect(database='postgres',
-                            user='postgres',
-                            password='o2blJnow!',
+    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                            user=os.environ.get('DB_USER'),
+                            password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
@@ -737,9 +764,9 @@ def final_delete(member_id):
         [type] -- [description]
     """
     # Get a connection
-    conn = psycopg2.connect(database='postgres',
-                            user='postgres',
-                            password='o2blJnow!',
+    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                            user=os.environ.get('DB_USER'),
+                            password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
@@ -776,9 +803,9 @@ def ages():
         [type] -- [description]
     """
     # Get a connection
-    conn = psycopg2.connect(database='postgres',
-                            user='postgres',
-                            password='o2blJnow!',
+    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                            user=os.environ.get('DB_USER'),
+                            password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
     # conn.cursor will return a cursor object, you can use this cursor to
