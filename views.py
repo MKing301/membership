@@ -1,6 +1,6 @@
-"""summary.
+"""The views module.
 
-[description]
+This module contain all of the routes for the application.
 """
 
 import os
@@ -22,8 +22,11 @@ from functools import wraps
 def index():
     """The route for the home screen.
 
+    Decorators:
+        app.route
+
     Returns:
-    Render template for home page with title of page
+    Renders template for home page
     """
     return render_template('index.html', Title="Home")
 
@@ -31,15 +34,16 @@ def index():
 # User register
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    """.
+    """The route for the register screen.
 
-    [description]
+    This routes a user to a form to register for access to the application.
 
     Decorators:
         app.route
 
     Returns:
-        [type] -- [description]
+        Renders template for registration page upon get request
+        Renders template for login page upon successful post request
     """
     form = RegisterForm()
     if form.validate_on_submit():
@@ -49,16 +53,16 @@ def register():
         email = request.form['email']
         password = sha256_crypt.hash(str(request.form['password']))
 
-        # Get a connection
+        # Get a connection to database
         conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                                 user=os.environ.get('DB_USER'),
                                 password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
-        # conn.cursor will return a cursor object, you can use this cursor to
-        # perform queries
+        # dict cursors allows access to the retrieved records using an
+        # interface similar to the Python dictionaries to perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-        # TODO hard-coded role as pending for now
+        # Set default user role as 'pending'
         dict_cur.execute(
             '''INSERT INTO admins(
                    first_name,
@@ -78,7 +82,7 @@ def register():
         # close db connection
         conn.close()
 
-        flash('You are now registered and can log in!', 'success')
+        flash('You are now registered!', 'success')
         return redirect(url_for('login'))
 
     else:
@@ -88,15 +92,18 @@ def register():
 # User login
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    """.
+    """The route for the login screen.
 
-    [description]
+    This routes a user to a form to login the application.
 
     Decorators:
         app.route
 
     Returns:
-        [type] -- [description]
+        Renders template for login page upon get request are unsuccesful post
+        request
+
+        Renders template for dashboard page upon successful post request
     """
     form = LoginForm()
     if form.validate_on_submit():
@@ -104,13 +111,13 @@ def login():
         email = request.form['email']
         password_candidate = request.form['password']
 
-        # Get a connection
+        # Get a connection to database
         conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                                 user=os.environ.get('DB_USER'),
                                 password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
-        # conn.cursor will return a cursor object, you can use this cursor to
-        # perform queries
+        # dict cursors allows access to the retrieved records using an
+        # interface similar to the Python dictionaries to perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         # Get user by username
@@ -153,15 +160,20 @@ def login():
 # Reset Request Form @ 22:27
 @app.route('/reset_request', methods=['GET', 'POST'])
 def reset_request():
-    """.
+    """The route for the password reset request screen.
 
-    [description]
+    This function first checks to see if a user is logged in the application.
+    It routes a user to a form to enter email to submit a request to reset
+    their password. If the user exist, it will send the user an email with a
+    link to rest their passord.
 
     Decorators:
         app.route
 
     Returns:
-        [type] -- [description]
+        Renders template for password reset request on get request
+        Renders template for dashboard if user logged in
+        Renders login screen if email successfully sent to user
     """
     try:
         if session['email']:
@@ -172,13 +184,13 @@ def reset_request():
         if form.validate_on_submit():
             # Get form field
             email = request.form['email']
-            # Get a connection
+            # Get a connection to database
             conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                                     user=os.environ.get('DB_USER'),
                                     password=os.environ.get('DB_PASSWORD'),
                                     host='localhost')
-            # conn.cursor will return a cursor object, you can use this cursor
-            # to perform queries
+            # dict cursors allows access to the retrieved records using an
+            # interface similar to the Python dictionaries to perform queries
             dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
             try:
                 # Check to see if email exist
@@ -196,7 +208,11 @@ def reset_request():
                                            form=form)
 
                 else:
+                    # Obtain a token
                     token = get_reset_token(user, user_id)
+
+                    # Create and send an email to send user with link
+                    # containing generated token
                     msg = Message(subject='Reset Password ',
                                   sender=os.environ.get('MAIL_USERNAME'),
                                   recipients=[user])
@@ -207,8 +223,8 @@ If you did not make this request, then simply ignore this email and
 no changes will be made.
 '''
                     mail.send(msg)
-                    flash('''An email has been sent with instructions to reset your
-                          password''', 'info')
+                    flash('''An email has been sent with instructions to reset
+                          your password''', 'info')
                     return redirect(url_for('login'))
 
                     # close connection
@@ -224,22 +240,28 @@ no changes will be made.
 # Reset Password Form @ 18:33 / 34:08
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
-    """.
+    """The route for the password reset request screen.
 
-    [description]
+    This function first checks to see if a user is logged in the application.
+    It verifies the user of the provided token from url in the email sent to
+    the user.  It routes a user to a form to enter new password, hash the
+    password and updates the user's password in the datebase on successful post
+    request.
 
     Decorators:
         app.route
 
     Returns:
-        [type] -- [description]
+        Renders template to reset password on get requests
+        Renders template for dashboard if user logged in
+        Renders login screen after databse updated with new password
     """
     try:
         if session['email']:
             flash('You must log out before resetting password!', 'warning')
             return redirect(url_for('dashboard'))
     except:
-        # TODO verify token (see time @ 6:18)
+        # Obtain user of token
         user = verify_reset_token(token)
         if user is None:
             flash('That is an invalid or expired token.', 'warning')
@@ -247,23 +269,24 @@ def reset_password(token):
         else:
             form = ResetPasswordForm()
             if form.validate_on_submit():
+
                 # Get form field
                 password = request.form['password']
-                print(password)
                 confirm = request.form['confirm']
 
-                # TODO (see time @ 34:13)
+                # Hash user password
                 new_password = sha256_crypt.hash(str(password))
-                print(new_password)
 
-                # Get a connection
+                # Get a connection to database
                 conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                                         user=os.environ.get('DB_USER'),
                                         password=os.environ.get('DB_PASSWORD'),
                                         host='localhost')
-                # conn.cursor will return a cursor object, you can use this cursor
-                # to perform queries
-                dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+                # dict cursors allows access to the retrieved records using an
+                # interface similar to the Python dictionaries to perform 
+                # queries
+                dict_cur = conn.cursor(
+                    cursor_factory=psycopg2.extras.DictCursor)
 
                 dict_cur.execute(''' UPDATE admins
                                  SET password = %s
@@ -283,20 +306,20 @@ def reset_password(token):
                                        form=form)
 
 
-# Check if user logged in
 def is_logged_in(f):
-    """.
+    """Check if user logged in.
 
-    [description]
+    The function checks to see if a user is logged in the application to
+    prevent access to pages that requires a user to be logged in.
 
     Decorators:
         wraps
 
     Arguments:
-        f {[type]} -- [description]
+        f 
 
     Returns:
-        [type] -- [description]
+        wrap
     """
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -312,25 +335,25 @@ def is_logged_in(f):
 @app.route('/dashboard')
 @is_logged_in
 def dashboard():
-    """[summary.
+    """The route for application dashboard.
 
-    [description]
+    This funtions displays the user's dashboard.
 
     Decorators:
         app.route
         is_logged_in
 
     Returns:
-        [type] -- [description]
+        Renders dashboard html page
     """
-    # Get a connection
+    # Get a connection to database
     conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                             user=os.environ.get('DB_USER'),
                             password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
-    # conn.cursor will return a cursor object, you can use this cursor to
-    # perform queries
+    # dict cursors allows access to the retrieved records using an
+    # interface similar to the Python dictionaries to perform queries
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Get Members
@@ -357,26 +380,25 @@ def dashboard():
 @app.route('/admin')
 @is_logged_in
 def admin():
-    """[summary.
+    """The route for admin page.
 
-    [description]
+    This funtions displays the admin page..
 
     Decorators:
         app.route
         is_logged_in
 
     Returns:
-        [type] -- [description]
+        Renders admin html page
     """
-    # Get a connection
-
+    # Get a connection to database
     conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                             user=os.environ.get('DB_USER'),
                             password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
-    # conn.cursor will return a cursor object, you can use this cursor to
-    # perform queries
+    # dict cursors allows access to the retrieved records using an
+    # interface similar to the Python dictionaries to perform queries
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Get Members
@@ -404,33 +426,35 @@ def admin():
            methods=['GET', 'POST'])
 @is_logged_in
 def update_role(admin_id, role):
-    """[summary].
+    """The route for updating admin role.
 
-    [description]
+    This funtions allows admin user to toggle admin role between 'admin'
+    and 'pending'. 'admin' role can log into application, but 'pending' role
+    cannot log into the application.
 
     Decorators:
         is_logged_in
 
     Arguments:
-        admin_id {[type]} -- [description]
-        role {[type]} -- [description]
+        admin_id  -- admin user id
+        role  -- role assigned ot admin user
 
     Returns:
-        [type] -- [description]
+        Renders admin html page
     """
     if request.method == 'POST':
         if role == 'pending':
             role = 'admin'
         else:
             role = 'pending'
-        # Get a connection
+        # Get a connection to database
         conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                                 user=os.environ.get('DB_USER'),
                                 password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
 
-        # conn.cursor will return a cursor object, you can use this cursor to
-        # perform queries
+        # dict cursors allows access to the retrieved records using an
+        # interface similar to the Python dictionaries to perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         # Execute
@@ -458,30 +482,31 @@ def update_role(admin_id, role):
 @app.route('/search', methods=['GET', 'POST'])
 @is_logged_in
 def search():
-    """[summary.
+    """The route for the search screen.
 
-    [description]
+    This function allows admin to search database for a user.
 
     Decorators:
         app.route
         is_logged_in
 
     Returns:
-        [type] -- [description]
+        Renders template for search page upon get request
+        Renders template for dashboard upon successful post request
     """
     form = SearchForm()
     if form.validate_on_submit():
         search_first_name = request.form['search_first_name'].capitalize()
         search_last_name = request.form['search_last_name'].capitalize()
 
-        # Get a connection
+        # Get a connection to database
         conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                                 user=os.environ.get('DB_USER'),
                                 password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
 
-        # conn.cursor will return a cursor object, you can use this cursor to
-        # perform queries
+        # dict cursors allows access to the retrieved records using an
+        # interface similar to the Python dictionaries to perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         # Get Members
@@ -516,16 +541,17 @@ def search():
 @app.route('/add_member', methods=['GET', 'POST'])
 @is_logged_in
 def add_member():
-    """.
+    """The route for the add member screen.
 
-    [description]
+    This function allows admin to add a user to the database..
 
     Decorators:
         app.route
         is_logged_in
 
     Returns:
-        [type] -- [description]
+        Renders template for add member page upon get request
+        Renders template for dashboard upon successful post request
     """
     form = MemberForm()
     if form.validate_on_submit():
@@ -542,14 +568,14 @@ def add_member():
         assigned_elder_first_name = request.form['assigned_elder_first_name']
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
-        # Get a connection
+        # Get a connection to database
         conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                                 user=os.environ.get('DB_USER'),
                                 password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
 
-        # conn.cursor will return a cursor object, you can use this cursor to
-        # perform queries
+        # dict cursors allows access to the retrieved records using an
+        # interface similar to the Python dictionaries to perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         # Execute
@@ -600,26 +626,27 @@ def add_member():
 def edit_member(member_id):
     """The edit member route.
 
-    [description]
+    This function allows admin to edit a member data in the database.
 
     Decorators:
         app.route
         is_logged_in
 
     Arguments:
-        member_id {[type]} -- [description]
+        member_id  -- member's id
 
     Returns:
-        [type] -- [description]
+        Renders template for edit member page upon get request
+        Renders template for dashboard upon successful post request
     """
-    # Get a connection
+    # Get a connection to database
     conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                             user=os.environ.get('DB_USER'),
                             password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
-    # conn.cursor will return a cursor object, you can use this cursor to
-    # perform queries
+    # dict cursors allows access to the retrieved records using an
+    # interface similar to the Python dictionaries to perform queries
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Execute
@@ -658,14 +685,14 @@ def edit_member(member_id):
         assigned_elder_first_name = request.form['assigned_elder_first_name']
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
-        # Get a connection
+        # Get a connection to database
         conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                                 user=os.environ.get('DB_USER'),
                                 password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
 
-        # conn.cursor will return a cursor object, you can use this cursor to
-        # perform queries
+        # dict cursors allows access to the retrieved records using an
+        # interface similar to the Python dictionaries to perform queries
         dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
         # Execute
@@ -715,28 +742,30 @@ def edit_member(member_id):
 @app.route('/delete_member/<string:member_id>', methods=['GET', 'POST'])
 @is_logged_in
 def delete_member(member_id):
-    """The delete member route.
+    """The first step to delete member route.
 
-    [description]
+    This function allows admin to stage the deletion a member from the 
+    database.
 
     Decorators:
         app.route
         is_logged_in
 
     Arguments:
-        member_id {[type]} -- [description]
+        member_id  -- member's id
 
     Returns:
-        [type] -- [description]
+        Renders template for delete member page upon get request
+        Renders template for deleting a member upon successful post request
     """
-    # Get a connection
+    # Get a connection to database
     conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                             user=os.environ.get('DB_USER'),
                             password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
-    # conn.cursor will return a cursor object, you can use this cursor to
-    # perform queries
+    # dict cursors allows access to the retrieved records using an
+    # interface similar to the Python dictionaries to perform queries
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Execute
@@ -749,28 +778,28 @@ def delete_member(member_id):
 @app.route('/final_delete/<string:member_id>', methods=['POST'])
 @is_logged_in
 def final_delete(member_id):
-    """[summary.
+    """The delete member route.
 
-    [description]
+    This function allows admin to delete a member from the database.
 
     Decorators:
         app.route
         is_logged_in
 
     Arguments:
-        member_id {[type]} -- [description]
+        member_id  -- member's id
 
     Returns:
-        [type] -- [description]
+        Renders dashboard page
     """
-    # Get a connection
+    # Get a connection to database
     conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                             user=os.environ.get('DB_USER'),
                             password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
-    # conn.cursor will return a cursor object, you can use this cursor to
-    # perform queries
+    # dict cursors allows access to the retrieved records using an
+    # interface similar to the Python dictionaries to perform queries
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     # Execute
@@ -791,31 +820,28 @@ def final_delete(member_id):
 @app.route('/ages')
 @is_logged_in
 def ages():
-    """[summary].
+    """The member age route.
 
-    [description]
+    This function displays the members age in html page in order of member's
+    first name.
 
     Decorators:
         app.route
         is_logged_in
 
     Returns:
-        [type] -- [description]
+        Renders age html page
     """
-    # Get a connection
+    # Get a connection to database
     conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                             user=os.environ.get('DB_USER'),
                             password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
 
-    # conn.cursor will return a cursor object, you can use this cursor to
-    # perform queries
+    # dict cursors allows access to the retrieved records using an
+    # interface similar to the Python dictionaries to perform queries
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # cur = conn.cursor() ---> used to return tuple
-
-    # execute query
-    # dict_cur.execute('SELECT * FROM log ORDER BY date_time DESC')
     dict_cur.execute('''SELECT
                             first_name,
                             last_name,
@@ -824,9 +850,6 @@ def ages():
                             extract(year from birthdate) AS year
                         FROM members
                         ORDER BY first_name''')
-    # dict_cur.execute('select users.first_name, users.last_name,
-    # log.date_time from users, log where users.rfidtag= log.rfidtag ORDER BY
-    # log.date_time DESC')
 
     members_ages = dict_cur.fetchall()
     if members_ages is not None:
@@ -856,14 +879,14 @@ def ages():
 def logout():
     """The route to log out of the application.
 
-    [description]
+    This function logs a user out of the application.
 
     Decorators:
         app.route
         is_logged_in
 
     Returns:
-        [type] -- [description]
+        Renders login page
     """
     session.clear()
     flash('You are now logged out', 'success')

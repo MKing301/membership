@@ -41,45 +41,54 @@ def get_age(birthmonth, birthday, birthyear):
 
 
 def get_reset_token(user_id, id):
-    """[summary].
+    """Get a token to reset password.
 
-    [description]
+    This function will allow the user to obtain a 256-bit key (minimum)/token
+    to use in order to reset their password.  The token is "good" for 30
+    minutes.
 
     Arguments:
-        user {[type]} -- [description]
-        user_id {[type]} -- [description]
+        user -- user's email
+        user_id -- represents the user's admin id
+
+    Returns:
+    256-bit key (minimum)/token
     """
     s = Serializer(app.config['SECRET_KEY'], 1800)
     return s.dumps({'user_id': id}).decode('utf-8')
 
 
 def verify_reset_token(token):
-    """[summary].
+    """Verify token of user requesting password reset.
 
-    [description]
+    This funtion is used to verify the user requesting to reset their passward
+    is the same user that requested the provided token.
 
     Arguments:
-        token {[type]} -- [description]
+        token -- 256-bit key (minimum)/token
 
     Returns:
-        [type] -- [description]
+        user's email
     """
     s = Serializer(app.config['SECRET_KEY'])
     try:
+        # Check if token is valid or expired.
         user_id = s.loads(token)['user_id']
     except:
         flash('That is an invalid or expired token.', 'warning')
         return redirect(url_for('reset_request'))
-    # Get a connection
+
+    # If token valid, get a connection to the database
     conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
                             user=os.environ.get('DB_USER'),
                             password=os.environ.get('DB_PASSWORD'),
                             host='localhost')
-    # conn.cursor will return a cursor object, you can use this cursor
-    # to perform queries
+
+    # dict cursors allows access to the retrieved records using an interface
+    # similar to the Python dictionaries to perform queries
     dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
-    # Check to see if email exist
+    # Check to see if email exist for user_id
     dict_cur.execute("SELECT * FROM admins WHERE admin_id = %s",
                      [user_id])
     data = dict_cur.fetchone()

@@ -1,6 +1,6 @@
-"""[summary.
+"""The forms module.
 
-[description]
+This module contains all of the forms used by the application.
 """
 
 from flask_wtf import FlaskForm
@@ -10,20 +10,21 @@ from wtforms import validators
 
 # Register Class
 class RegisterForm(FlaskForm):
-    """[summary.
+    """The Registration Form.
 
-    [description]
+    This form contains field to collect admin users that will register to
+    access the application.
 
     Extends:
         FlaskForm
 
     Variables:
-        first_name {[type]} -- [description]
-        last_name {[type]} -- [description]
-        username {[type]} -- [description]
-        email {[type]} -- [description]
-        password {[type]} -- [description]
-        confirm {[type]} -- [description]
+        first_name -- admin's first name
+        last_name -- admin's last name
+        username -- admin's username
+        email -- admin's email
+        password -- password
+        confirm -- password
     """
 
     first_name = StringField('First Name', [validators.Length(min=2, max=50)])
@@ -37,16 +38,16 @@ class RegisterForm(FlaskForm):
 
 # Login Class
 class LoginForm(FlaskForm):
-    """[summary.
+    """The Login Form.
 
-    [description]
+    This is the form that contains the field to capture login details.
 
     Extends:
         FlaskForm
 
     Variables:
-        username {[type]} -- [description]
-        password {[type]} -- [description]
+        email -- admin's email
+        password -- admin's password
     """
 
     email = StringField('Email', [validators.DataRequired()])
@@ -55,26 +56,26 @@ class LoginForm(FlaskForm):
 
 # Member Form Class
 class MemberForm(FlaskForm):
-    """[summary.
+    """The Member Form.
 
-    [description]
+    This is the form the contain the field for the member's details.
 
     Extends:
         FlaskForm
 
     Variables:
-        first_name {[type]} -- [description]
-        last_name {[type]} -- [description]
-        street_num {[type]} -- [description]
-        street_name {[type]} -- [description]
-        city {[type]} -- [description]
-        state {[type]} -- [description]
-        postal_code {[type]} -- [description]
-        contact_num {[type]} -- [description]
-        birthdate {[type]} -- [description]
-        member_tier {[type]} -- [description]
-        assigned_elder_first_name {[type]} -- [description]
-        assigned_elder_last_name {[type]} -- [description]
+        first_name -- member's first name
+        last_name -- member's last name
+        street_num -- member's street_num
+        street_name -- member's street_name
+        city -- member's city
+        state -- member's state
+        postal_code -- member's postal_code
+        contact_num -- member's contact_num
+        birthdate -- member's birthdate
+        member_tier -- member's tier
+        assigned_elder_first_name -- member's assigned elder first name
+        assigned_elder_last_name -- member's assigned elder last name
     """
 
     first_name = StringField('First Name', [validators.DataRequired()])
@@ -95,16 +96,17 @@ class MemberForm(FlaskForm):
 
 # Search Form
 class SearchForm(FlaskForm):
-    """[summary.
+    """The Search Form.
 
-    [description]
+    The form contins the field an admin can search for members in the
+    database.
 
     Extends:
         FlaskForm
 
     Variables:
-        search_first_name {[type]} -- [description]
-        search_last_name {[type]} -- [description]
+        search_first_name -- search by member's first name
+        search_last_name -- search by member's last name
     """
 
     search_first_name = StringField(
@@ -115,15 +117,16 @@ class SearchForm(FlaskForm):
 
 # Form to Request Reset of Password
 class ResetRequestForm(FlaskForm):
-    """[summary].
+    """The Reset Request Form.
 
-    [description]
+    This form is used when an admin wants to make a request to reset their
+    password.
 
     Extends:
         FlaskForm
 
     Variables:
-        email {[type]} -- [description]
+        email -- admin's email address
     """
 
     email = StringField('Email', [validators.DataRequired()])
@@ -131,16 +134,16 @@ class ResetRequestForm(FlaskForm):
 
 # Form to Request Password Reset
 class ResetPasswordForm(FlaskForm):
-    """[summary].
+    """The Reset Password Form.
 
-    [description]
+    The form used for admin to reset their password.
 
     Extends:
         FlaskForm
 
     Variables:
-        password {[type]} -- [description]
-        confirm {[type]} -- [description]
+        password -- new password
+        confirm -- new password
     """
 
     password = PasswordField('Password', [validators.DataRequired(),
