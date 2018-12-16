@@ -23,7 +23,7 @@ requirements, you will need to change to the `membership` directory.
 
 --TODO--
 
-Type `python database_setup.py` to run the application.
-Type `python database_setup2.py` to run the application.
-Type `python database_superuser_setup.py` to run the application.
-Type `python membersapp.py` to run the application.
+* Type `python database_setup.py` to run the application.
+* Type `python database_setup2.py` to run the application.
+* Type `python database_superuser_setup.py` to run the application.
+* Type `python membersapp.py` to run the application.
