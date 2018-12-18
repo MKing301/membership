@@ -8,7 +8,8 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime
 from membersapp import app, mail
-from helpers import get_age, get_reset_token, verify_reset_token
+from helpers import (get_conn, get_dict_cur, get_age, get_reset_token,
+                     verify_reset_token)
 from forms import (RegisterForm, LoginForm, MemberForm, SearchForm,
                    ResetRequestForm, ResetPasswordForm)
 from flask import render_template, flash, redirect, url_for, request, session
@@ -54,13 +55,11 @@ def register():
         password = sha256_crypt.hash(str(request.form['password']))
 
         # Get a connection to database
-        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                                user=os.environ.get('DB_USER'),
-                                password=os.environ.get('DB_PASSWORD'),
-                                host='localhost')
+        conn = get_conn()
+
         # dict cursors allows access to the retrieved records using an
         # interface similar to the Python dictionaries to perform queries
-        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        dict_cur = get_dict_cur()
 
         # Set default user role as 'pending'
         dict_cur.execute(
@@ -112,13 +111,10 @@ def login():
         password_candidate = request.form['password']
 
         # Get a connection to database
-        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                                user=os.environ.get('DB_USER'),
-                                password=os.environ.get('DB_PASSWORD'),
-                                host='localhost')
+        conn = get_conn()
         # dict cursors allows access to the retrieved records using an
         # interface similar to the Python dictionaries to perform queries
-        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        dict_cur = get_dict_cur()
 
         # Get user by username
         dict_cur.execute("SELECT * FROM admins WHERE email = %s",
@@ -185,13 +181,10 @@ def reset_request():
             # Get form field
             email = request.form['email']
             # Get a connection to database
-            conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                                    user=os.environ.get('DB_USER'),
-                                    password=os.environ.get('DB_PASSWORD'),
-                                    host='localhost')
+            conn = get_conn()
             # dict cursors allows access to the retrieved records using an
             # interface similar to the Python dictionaries to perform queries
-            dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+            dict_cur = get_dict_cur()
             try:
                 # Check to see if email exist
                 dict_cur.execute("SELECT * FROM admins WHERE email = %s",
@@ -278,15 +271,11 @@ def reset_password(token):
                 new_password = sha256_crypt.hash(str(password))
 
                 # Get a connection to database
-                conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                                        user=os.environ.get('DB_USER'),
-                                        password=os.environ.get('DB_PASSWORD'),
-                                        host='localhost')
+                conn = get_conn()
                 # dict cursors allows access to the retrieved records using an
-                # interface similar to the Python dictionaries to perform 
+                # interface similar to the Python dictionaries to perform
                 # queries
-                dict_cur = conn.cursor(
-                    cursor_factory=psycopg2.extras.DictCursor)
+                dict_cur = get_dict_cur()
 
                 dict_cur.execute(''' UPDATE admins
                                  SET password = %s
@@ -316,7 +305,7 @@ def is_logged_in(f):
         wraps
 
     Arguments:
-        f 
+        f
 
     Returns:
         wrap
@@ -347,14 +336,11 @@ def dashboard():
         Renders dashboard html page
     """
     # Get a connection to database
-    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                            user=os.environ.get('DB_USER'),
-                            password=os.environ.get('DB_PASSWORD'),
-                            host='localhost')
+    conn = get_conn()
 
     # dict cursors allows access to the retrieved records using an
     # interface similar to the Python dictionaries to perform queries
-    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    dict_cur = get_dict_cur()
 
     # Get Members
     dict_cur.execute("SELECT * FROM members ORDER BY last_name ASC")
@@ -392,14 +378,11 @@ def admin():
         Renders admin html page
     """
     # Get a connection to database
-    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                            user=os.environ.get('DB_USER'),
-                            password=os.environ.get('DB_PASSWORD'),
-                            host='localhost')
+    conn = get_conn()
 
     # dict cursors allows access to the retrieved records using an
     # interface similar to the Python dictionaries to perform queries
-    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    dict_cur = get_dict_cur()
 
     # Get Members
     dict_cur.execute("SELECT * FROM admins ORDER BY last_name ASC")
@@ -448,14 +431,11 @@ def update_role(admin_id, role):
         else:
             role = 'pending'
         # Get a connection to database
-        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                                user=os.environ.get('DB_USER'),
-                                password=os.environ.get('DB_PASSWORD'),
-                                host='localhost')
+        conn = get_conn()
 
         # dict cursors allows access to the retrieved records using an
         # interface similar to the Python dictionaries to perform queries
-        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        dict_cur = get_dict_cur()
 
         # Execute
 
@@ -500,14 +480,11 @@ def search():
         search_last_name = request.form['search_last_name'].capitalize()
 
         # Get a connection to database
-        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                                user=os.environ.get('DB_USER'),
-                                password=os.environ.get('DB_PASSWORD'),
-                                host='localhost')
+        conn = get_conn()
 
         # dict cursors allows access to the retrieved records using an
         # interface similar to the Python dictionaries to perform queries
-        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        dict_cur = get_dict_cur()
 
         # Get Members
         dict_cur.execute(
@@ -569,14 +546,11 @@ def add_member():
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
         # Get a connection to database
-        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                                user=os.environ.get('DB_USER'),
-                                password=os.environ.get('DB_PASSWORD'),
-                                host='localhost')
+        conn = get_conn()
 
         # dict cursors allows access to the retrieved records using an
         # interface similar to the Python dictionaries to perform queries
-        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        dict_cur = get_dict_cur()
 
         # Execute
         dict_cur.execute(
@@ -640,14 +614,11 @@ def edit_member(member_id):
         Renders template for dashboard upon successful post request
     """
     # Get a connection to database
-    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                            user=os.environ.get('DB_USER'),
-                            password=os.environ.get('DB_PASSWORD'),
-                            host='localhost')
+    conn = get_conn()
 
     # dict cursors allows access to the retrieved records using an
     # interface similar to the Python dictionaries to perform queries
-    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    dict_cur = get_dict_cur()
 
     # Execute
     dict_cur.execute("SELECT * FROM members where member_id = %s", [member_id])
@@ -686,14 +657,11 @@ def edit_member(member_id):
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
         # Get a connection to database
-        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                                user=os.environ.get('DB_USER'),
-                                password=os.environ.get('DB_PASSWORD'),
-                                host='localhost')
+        conn = get_conn()
 
         # dict cursors allows access to the retrieved records using an
         # interface similar to the Python dictionaries to perform queries
-        dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        dict_cur = get_dict_cur()
 
         # Execute
         dict_cur.execute(
@@ -759,14 +727,11 @@ def delete_member(member_id):
         Renders template for deleting a member upon successful post request
     """
     # Get a connection to database
-    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                            user=os.environ.get('DB_USER'),
-                            password=os.environ.get('DB_PASSWORD'),
-                            host='localhost')
+    conn = get_conn()
 
     # dict cursors allows access to the retrieved records using an
     # interface similar to the Python dictionaries to perform queries
-    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    dict_cur = get_dict_cur()
 
     # Execute
     dict_cur.execute("SELECT * FROM members where member_id = %s", [member_id])
@@ -793,14 +758,11 @@ def final_delete(member_id):
         Renders dashboard page
     """
     # Get a connection to database
-    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                            user=os.environ.get('DB_USER'),
-                            password=os.environ.get('DB_PASSWORD'),
-                            host='localhost')
+    conn = get_conn()
 
     # dict cursors allows access to the retrieved records using an
     # interface similar to the Python dictionaries to perform queries
-    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    dict_cur = get_dict_cur()
 
     # Execute
     dict_cur.execute("DELETE FROM members where member_id = %s", [member_id])
@@ -833,14 +795,11 @@ def ages():
         Renders age html page
     """
     # Get a connection to database
-    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                            user=os.environ.get('DB_USER'),
-                            password=os.environ.get('DB_PASSWORD'),
-                            host='localhost')
+    conn = get_conn()
 
     # dict cursors allows access to the retrieved records using an
     # interface similar to the Python dictionaries to perform queries
-    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    dict_cur = get_dict_cur()
 
     dict_cur.execute('''SELECT
                             first_name,
