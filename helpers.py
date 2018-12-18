@@ -11,15 +11,45 @@ from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
-def get_age(birthmonth, birthday, birthyear):
-    """[summary].
+def get_conn():
+    """Get database connection.
 
-    [description]
+    This function establishes a connection with the database.
+
+    Returns:
+        conn -- connection to the dB
+    """
+    # Get a connection to database
+    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                            user=os.environ.get('DB_USER'),
+                            password=os.environ.get('DB_PASSWORD'),
+                            host='localhost')
+    return conn
+
+
+def get_dict_cur():
+    """Get a Dictionary cursor.
+
+    This funciton obtains a dict cursor which allows access to the retrieved
+    records using an interface similar to the Python dictionaries to perform 
+    queries
+
+    Returns:
+        dict_cur -- a dictionary cursor
+    """
+    dict_cur = get_conn().cursor(cursor_factory=psycopg2.extras.DictCursor)
+    return dict_cur
+
+
+def get_age(birthmonth, birthday, birthyear):
+    """Get age.
+
+    This function calculates the age of a member.
 
     Arguments:
-    birthmonth {[type]} -- [description]
-    birthday {[type]} -- [description]
-    birthyear {[type]} -- [description]
+    birthmonth -- member's birth month
+    birthday -- member's birth day
+    birthyear -- member's birth year
 
     Returns:
     [type] -- [description]
