@@ -10,11 +10,13 @@ database.
 
 ## Requirements
 
+* Windows 10 64-bit system
 * You successfully installed *Python 3.7*  on your computer.
 * You successfully installed *PostgreSQL* on your computer.
 
 ## Installation
 -- TODO --
+* pip install -r requirements.txt 
 
 ## Run the program
 
