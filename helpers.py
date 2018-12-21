@@ -20,18 +20,22 @@ def get_conn():
         conn -- connection to the dB
     """
     # Get a connection to database
-    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                            user=os.environ.get('DB_USER'),
-                            password=os.environ.get('DB_PASSWORD'),
-                            host='localhost')
-    return conn
+    try:
+        conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
+                                user=os.environ.get('DB_USER'),
+                                password=os.environ.get('DB_PASSWORD'),
+                                host='localhost')
+        return conn
+    except:
+        print("No connection to database established!")
+        return None
 
 
 def get_dict_cur():
     """Get a Dictionary cursor.
 
     This funciton obtains a dict cursor which allows access to the retrieved
-    records using an interface similar to the Python dictionaries to perform 
+    records using an interface similar to the Python dictionaries to perform
     queries
 
     Returns:
