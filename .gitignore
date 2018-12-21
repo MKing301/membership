@@ -1,28 +1,6 @@
+.gitignore
+__pycache__
+venv
 
-__pycache__/forms.cpython-35.pyc
 
-__pycache__/helpers.cpython-35.pyc
 
-venv/bin/activate
-
-venv/pip-selfcheck.json
-
-venv/bin/activate.csh
-
-venv/lib/python3.5/weakref.py
-
-venv/lib/python3.5/warnings.py
-
-venv/lib/python3.5/types.py
-
-venv/lib/python3.5/tokenize.py
-
-venv/lib/python3.5/token.py
-
-venv/lib/python3.5/tempfile.py
-
-__pycache__/membersapp.cpython-35.pyc
-
-__pycache__/views.cpython-35.pyc
-
-test_member.py
