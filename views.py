@@ -54,31 +54,36 @@ def register():
         email = request.form['email']
         password = sha256_crypt.hash(str(request.form['password']))
 
+        values = (first_name,
+                  last_name,
+                  username,
+                  email,
+                  password,
+                  'pending',
+                  datetime.now())
         # Get a connection to database
         conn = get_conn()
 
-        # dict cursors allows access to the retrieved records using an
-        # interface similar to the Python dictionaries to perform queries
-        dict_cur = get_dict_cur()
+        # Get cursor and execute query
+        with conn.cursor() as cur:
+            sql = '''INSERT INTO admins(
+                        first_name,
+                        last_name,
+                        username,
+                        email,
+                        password,
+                        role,
+                        registered_date)
+                     VALUES(%s, %s, %s, %s, %s, %s, %s)'''
+            cur.execute(sql, values)
 
-        # Set default user role as 'pending'
-        dict_cur.execute(
-            '''INSERT INTO admins(
-                   first_name,
-                   last_name,
-                   username,
-                   email,
-                   password,
-                   role,
-                   registered_date)
-               VALUES(%s, %s, %s, %s, %s, %s, %s)
-               ''', (first_name, last_name, username, email, password,
-                     'pending', datetime.now()))
-
-        # commit to db
+        # Commit
         conn.commit()
 
-        # close db connection
+        # Close cursor
+        cur.close()
+
+        # Close connection
         conn.close()
 
         flash('You are now registered!', 'success')
@@ -147,13 +152,16 @@ def login():
             flash('Invalid username and/or password!', 'danger')
             return render_template('login.html', Title="Login", form=form)
 
-        # close connection
+        # Close dictionary cursor
+        dict_cur.close()
+
+        # Close connection
         conn.close()
 
     return render_template('login.html', Title="Login", form=form)
 
 
-# Reset Request Form @ 22:27
+# Reset Request Form
 @app.route('/reset_request', methods=['GET', 'POST'])
 def reset_request():
     """The route for the password reset request screen.
@@ -209,7 +217,7 @@ def reset_request():
                     msg = Message(subject='Reset Password ',
                                   sender=os.environ.get('MAIL_USERNAME'),
                                   recipients=[user])
-                    msg.body = f'''To reset your password, visit the following
+                    msg.body = '''To reset your password, visit the following
 link: {url_for('reset_password', token=token, _external=True)}
 
 If you did not make this request, then simply ignore this email and
@@ -220,7 +228,10 @@ no changes will be made.
                           your password''', 'info')
                     return redirect(url_for('login'))
 
-                    # close connection
+                    # Close dictionary cursor
+                    dict_cur.close()
+
+                    # Close connection
                     conn.close()
             except:
                 flash('There is no account with that email.', 'warning')
@@ -230,7 +241,7 @@ no changes will be made.
                            form=form)
 
 
-# Reset Password Form @ 18:33 / 34:08
+# Reset Password Form
 @app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     """The route for the password reset request screen.
@@ -270,21 +281,24 @@ def reset_password(token):
                 # Hash user password
                 new_password = sha256_crypt.hash(str(password))
 
+                values = (new_password, user)
                 # Get a connection to database
                 conn = get_conn()
-                # dict cursors allows access to the retrieved records using an
-                # interface similar to the Python dictionaries to perform
-                # queries
-                dict_cur = get_dict_cur()
 
-                dict_cur.execute(''' UPDATE admins
-                                 SET password = %s
-                                 WHERE email = %s''', (new_password, user))
+                # Get cursor and execute query
+                with conn.cursor() as cur:
+                    sql = ''' UPDATE admins
+                              SET password = %s
+                              WHERE email = %s'''
+                    cur.execute(sql, values)
 
                 # Commit
                 conn.commit()
 
-                # Close Connection
+                # Close cursor
+                cur.close()
+
+                # Close connection
                 conn.close()
 
                 flash('Your password has been updated.', 'success')
@@ -357,6 +371,8 @@ def dashboard():
         return render_template('dashboard.html',
                                Title="Dashboard",
                                msg=msg)
+    # Close dictionary cursor
+    dict_cur.close()
 
     # Close connection
     conn.close()
@@ -399,6 +415,8 @@ def admin():
         return render_template('admin.html',
                                Title="Admin",
                                msg=msg)
+    # Close dictionary cursor
+    dict_cur.close()
 
     # Close connection
     conn.close()
@@ -430,24 +448,26 @@ def update_role(admin_id, role):
             role = 'admin'
         else:
             role = 'pending'
+
+        values = (role, admin_id)
+
         # Get a connection to database
         conn = get_conn()
 
-        # dict cursors allows access to the retrieved records using an
-        # interface similar to the Python dictionaries to perform queries
-        dict_cur = get_dict_cur()
-
-        # Execute
-
-        dict_cur.execute(
-            ''' UPDATE admins
-                SET role = %s
-                WHERE admin_id = %s''', (role, admin_id))
+        # Get a cursor and execute query
+        with conn.cursor() as cur:
+            sql = ''' UPDATE admins
+                      SET role = %s
+                      WHERE admin_id = %s'''
+            cur.execute(sql, values)
 
         # Commit
         conn.commit()
 
-        # Close Connection
+        # Close cursor
+        cur.close()
+
+        # Close connection
         conn.close()
 
         flash('Role Updated!', 'success')
@@ -508,6 +528,9 @@ def search():
                                    Title="Dashboard",
                                    msg=msg)
 
+        # Close dictionary cursor
+        dict_cur.close()
+
         # Close connection
         conn.close()
 
@@ -545,46 +568,48 @@ def add_member():
         assigned_elder_first_name = request.form['assigned_elder_first_name']
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
+        values = (first_name,
+                  last_name,
+                  street_num,
+                  street_name,
+                  city,
+                  state,
+                  postal_code,
+                  contact_num,
+                  birthdate,
+                  member_tier,
+                  assigned_elder_first_name,
+                  assigned_elder_last_name)
+
         # Get a connection to database
         conn = get_conn()
 
-        # dict cursors allows access to the retrieved records using an
-        # interface similar to the Python dictionaries to perform queries
-        dict_cur = get_dict_cur()
-
-        # Execute
-        dict_cur.execute(
-            ''' INSERT INTO members (first_name,
-                                     last_name,
-                                     street_num,
-                                     street_name,
-                                     city,
-                                     state,
-                                     postal_code,
-                                     contact_num,
-                                     birthdate,
-                                     member_tier,
-                                     assigned_elder_first_name,
-                                     assigned_elder_last_name)
-                VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)''',
-                        (first_name,
-                         last_name,
-                         street_num,
-                         street_name,
-                         city,
-                         state,
-                         postal_code,
-                         contact_num,
-                         birthdate,
-                         member_tier,
-                         assigned_elder_first_name,
-                         assigned_elder_last_name))
+        # Get curson and execute query
+        with conn.cursor() as cur:
+            sql = ''' INSERT INTO members (
+                            first_name,
+                            last_name,
+                            street_num,
+                            street_name,
+                            city,
+                            state,
+                            postal_code,
+                            contact_num,
+                            birthdate,
+                            member_tier,
+                            assigned_elder_first_name,
+                            assigned_elder_last_name)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s,
+                              %s, %s, %s, %s, %s)'''
+            cur.execute(sql, values)
 
         # Commit
         conn.commit()
 
-        # Close Connection
+        # Close cursor
+        cur.close()
+
+        # Close connection
         conn.close()
 
         flash('Member Added!', 'success')
@@ -625,6 +650,9 @@ def edit_member(member_id):
 
     member = dict_cur.fetchone()
 
+    # Close dictionary cursor
+    dict_cur.close()
+
     # Get form
     form = MemberForm()
 
@@ -656,46 +684,49 @@ def edit_member(member_id):
         assigned_elder_first_name = request.form['assigned_elder_first_name']
         assigned_elder_last_name = request.form['assigned_elder_last_name']
 
+        values = (first_name,
+                  last_name,
+                  street_num,
+                  street_name,
+                  city,
+                  state,
+                  postal_code,
+                  contact_num,
+                  birthdate,
+                  member_tier,
+                  assigned_elder_first_name,
+                  assigned_elder_last_name,
+                  member[0])
+
         # Get a connection to database
         conn = get_conn()
 
-        # dict cursors allows access to the retrieved records using an
-        # interface similar to the Python dictionaries to perform queries
-        dict_cur = get_dict_cur()
-
-        # Execute
-        dict_cur.execute(
-            ''' UPDATE members
-                SET first_name = %s,
-                last_name = %s,
-                street_num = %s,
-                street_name = %s,
-                city = %s,
-                state = %s,
-                postal_code = %s,
-                contact_num = %s,
-                birthdate = %s,
-                member_tier = %s,
-                assigned_elder_first_name = %s,
-                assigned_elder_last_name = %s
-                WHERE member_id = %s''', (first_name,
-                                          last_name,
-                                          street_num,
-                                          street_name,
-                                          city,
-                                          state,
-                                          postal_code,
-                                          contact_num,
-                                          birthdate,
-                                          member_tier,
-                                          assigned_elder_first_name,
-                                          assigned_elder_last_name,
-                                          member[0]))
+        # Get cursor and execute query
+        with conn.cursor() as cur:
+            sql = ''' UPDATE members
+                      SET
+                        first_name = %s,
+                        last_name = %s,
+                        street_num = %s,
+                        street_name = %s,
+                        city = %s,
+                        state = %s,
+                        postal_code = %s,
+                        contact_num = %s,
+                        birthdate = %s,
+                        member_tier = %s,
+                        assigned_elder_first_name = %s,
+                        assigned_elder_last_name = %s
+                      WHERE member_id = %s'''
+            cur.execute(sql, values)
 
         # Commit
         conn.commit()
 
-        # Close Connection
+        # Close cursor
+        cur.close()
+
+        # Close connection
         conn.close()
 
         flash('Member Updated!', 'success')
@@ -712,7 +743,7 @@ def edit_member(member_id):
 def delete_member(member_id):
     """The first step to delete member route.
 
-    This function allows admin to stage the deletion a member from the 
+    This function allows admin to stage the deletion a member from the
     database.
 
     Decorators:
@@ -736,6 +767,13 @@ def delete_member(member_id):
     # Execute
     dict_cur.execute("SELECT * FROM members where member_id = %s", [member_id])
     member_to_delete = dict_cur.fetchone()
+
+    # Close dictionary cursor
+    dict_cur.close()
+
+    # Close connection
+    conn.close()
+
     return render_template(
         'delete_member_confirmation.html', member_to_delete=member_to_delete)
 
@@ -758,19 +796,22 @@ def final_delete(member_id):
         Renders dashboard page
     """
     # Get a connection to database
+
+    values = [member_id]
     conn = get_conn()
 
-    # dict cursors allows access to the retrieved records using an
-    # interface similar to the Python dictionaries to perform queries
-    dict_cur = get_dict_cur()
-
-    # Execute
-    dict_cur.execute("DELETE FROM members where member_id = %s", [member_id])
+    # Get cursor
+    with conn.cursor() as cur:
+        sql = "DELETE FROM members where member_id = %s"
+        cur.execute(sql, values)
 
     # Commit
     conn.commit()
 
-    # Close Connection
+    # Close cursor
+    cur.close()
+
+    # Close connection
     conn.close()
 
     flash('Member Deleted!', 'success')
@@ -827,8 +868,10 @@ def ages():
         msg = 'No members; therefore, no ages displayed.'
         return render_template('ages.html', Title="Member's Age", msg=msg)
 
-    # Close the communication with the PostgreSQL database
+    # Close dictionary cursor
     dict_cur.close()
+
+    # Close connection
     conn.close()
 
 
