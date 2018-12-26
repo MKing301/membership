@@ -217,7 +217,7 @@ def reset_request():
                     msg = Message(subject='Reset Password ',
                                   sender=os.environ.get('MAIL_USERNAME'),
                                   recipients=[user])
-                    msg.body = '''To reset your password, visit the following
+                    msg.body = f'''To reset your password, visit the following
 link: {url_for('reset_password', token=token, _external=True)}
 
 If you did not make this request, then simply ignore this email and
