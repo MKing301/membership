@@ -3,7 +3,7 @@
 This module contains all of the forms used by the application.
 """
 
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import StringField, PasswordField, DateField, IntegerField
 from wtforms import validators
 
@@ -34,7 +34,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField('Password', [
         validators.equal_to('confirm', message='Passwords do not match.')])
     confirm = PasswordField('Confirm Password')
-
+    recaptcha = RecaptchaField()
 
 # Login Class
 class LoginForm(FlaskForm):
@@ -52,7 +52,7 @@ class LoginForm(FlaskForm):
 
     email = StringField('Email', [validators.DataRequired()])
     password = PasswordField('Password', [validators.DataRequired()])
-
+    recaptcha = RecaptchaField()
 
 # Member Form Class
 class MemberForm(FlaskForm):
@@ -130,7 +130,7 @@ class ResetRequestForm(FlaskForm):
     """
 
     email = StringField('Email', [validators.DataRequired()])
-
+    recaptcha = RecaptchaField()
 
 # Form to Request Password Reset
 class ResetPasswordForm(FlaskForm):
@@ -150,3 +150,4 @@ class ResetPasswordForm(FlaskForm):
                              validators.equal_to('confirm',
                              message='Passwords do not match.')])
     confirm = PasswordField('Confirm Password')
+    recaptcha = RecaptchaField()
