@@ -1,12 +1,12 @@
 # Membership App
 
 The _**Membership App**_ (`membersapp.py`) allows an Administrator to register 
-and log into the application after their role is updated by the application's Superuser.  The application provides an admin user the ability to reset thier 
-password.
+and log into the application after their role is updated by the application's Superuser.  The application provides an admin user the ability to reset thier password.
 
 Administrators will be able to Create, Read, Update and Delete members in the
 database.
 
+--TODO--
 
 ## Requirements
 
