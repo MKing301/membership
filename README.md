@@ -12,6 +12,7 @@ database.
 
 * Ubuntu 16.04
 * You successfully installed *Python 3.5*  on your computer.
+* [Virtual Environment for Python3](https://docs.python.org/3/library/venv.html)
 * You successfully installed *PostgreSQL* on your computer. (sudo apt-get install postgresql postgresql-contrib)
 
 ## Installation
