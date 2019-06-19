@@ -13,11 +13,11 @@ from datetime import datetime
 from passlib.hash import sha256_crypt
 
 
-first_name = 'admin'
-last_name = 'user'
-username = 'admin'
-email = 'admin@rightofzero.com'
-hashed_password = sha256_crypt.hash(str('password'))
+first_name = os.environ.get('FIRST_NAME')
+last_name = os.environ.get('LAST_NAME')
+username = os.environ.get('USERNAME')
+email = os.environ.get('EMAIL')
+hashed_password = sha256_crypt.hash(str(os.environ.get('PASSWORD')))
 
 # Get a connection to the database
 conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
