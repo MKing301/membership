@@ -16,11 +16,11 @@
     <link rel= "stylesheet" href= "{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-	{% include 'includes/_navbar.html' %}
 		<div class="container-fluid">
+            {% include 'includes/_navbar.html' %}
 			{% include 'includes/_messages.html' %}
-			{% block body %} {% endblock %}
+            {% block body %} {% endblock %}
+            {% include 'includes/_footer.html' %}
 		</div>
-	{% include 'includes/_footer.html' %}
 </body>
 </html>
