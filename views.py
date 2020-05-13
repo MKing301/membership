@@ -8,7 +8,7 @@ import psycopg2
 import psycopg2.extras
 from datetime import datetime
 from membersapp import app, mail
-from helpers import (get_conn, get_dict_cur, get_age, get_reset_token,
+from helpers import (connect, get_age, get_reset_token,
                      verify_reset_token)
 from forms import (RegisterForm, LoginForm, MemberForm, SearchForm,
                    ResetRequestForm, ResetPasswordForm)
@@ -62,10 +62,10 @@ def register():
                   'pending',
                   datetime.now())
         # Get a connection to database
-        conn = get_conn()
+        conn, cur = connect()
 
         # Get cursor and execute query
-        with conn.cursor() as cur:
+        with cur as cur:
             sql = '''INSERT INTO admins(
                         first_name,
                         last_name,
@@ -116,15 +116,12 @@ def login():
         password_candidate = request.form['password']
 
         # Get a connection to database
-        conn = get_conn()
-        # dict cursors allows access to the retrieved records using an
-        # interface similar to the Python dictionaries to perform queries
-        dict_cur = get_dict_cur()
+        conn, cur = connect()
 
         # Get user by username
-        dict_cur.execute("SELECT * FROM admins WHERE email = %s",
+        cur.execute("SELECT * FROM admins WHERE email = %s",
                          [email])
-        data = dict_cur.fetchone()
+        data = cur.fetchone()
 
         if data:
             # Get stored hash
@@ -153,7 +150,7 @@ def login():
             return render_template('login.html', Title="Login", form=form)
 
         # Close dictionary cursor
-        dict_cur.close()
+        cur.close()
 
         # Close connection
         conn.close()
@@ -189,15 +186,12 @@ def reset_request():
             # Get form field
             email = request.form['email']
             # Get a connection to database
-            conn = get_conn()
-            # dict cursors allows access to the retrieved records using an
-            # interface similar to the Python dictionaries to perform queries
-            dict_cur = get_dict_cur()
+            conn, cur = connect()
             try:
                 # Check to see if email exist
-                dict_cur.execute("SELECT * FROM admins WHERE email = %s",
+                cur.execute("SELECT * FROM admins WHERE email = %s",
                                  [email])
-                data = dict_cur.fetchone()
+                data = cur.fetchone()
                 user = data['email']
                 user_id = data['admin_id']
 
@@ -229,7 +223,7 @@ no changes will be made.
                     return redirect(url_for('login'))
 
                     # Close dictionary cursor
-                    dict_cur.close()
+                    cur.close()
 
                     # Close connection
                     conn.close()
@@ -283,10 +277,10 @@ def reset_password(token):
 
                 values = (new_password, user)
                 # Get a connection to database
-                conn = get_conn()
+                conn, cur = connect()
 
                 # Get cursor and execute query
-                with conn.cursor() as cur:
+                with cur as cur:
                     sql = ''' UPDATE admins
                               SET password = %s
                               WHERE email = %s'''
@@ -350,16 +344,13 @@ def dashboard():
         Renders dashboard html page
     """
     # Get a connection to database
-    conn = get_conn()
+    conn, cur = connect()
 
-    # dict cursors allows access to the retrieved records using an
-    # interface similar to the Python dictionaries to perform queries
-    dict_cur = get_dict_cur()
 
     # Get Members
-    dict_cur.execute("SELECT * FROM members ORDER BY last_name ASC")
+    cur.execute("SELECT * FROM members ORDER BY last_name ASC")
 
-    members = dict_cur.fetchall()
+    members = cur.fetchall()
 
     if members:
         return render_template('dashboard.html',
@@ -372,7 +363,7 @@ def dashboard():
                                Title="Dashboard",
                                msg=msg)
     # Close dictionary cursor
-    dict_cur.close()
+    cur.close()
 
     # Close connection
     conn.close()
@@ -394,16 +385,12 @@ def admin():
         Renders admin html page
     """
     # Get a connection to database
-    conn = get_conn()
-
-    # dict cursors allows access to the retrieved records using an
-    # interface similar to the Python dictionaries to perform queries
-    dict_cur = get_dict_cur()
+    conn, cur = connect()
 
     # Get Members
-    dict_cur.execute("SELECT * FROM admins ORDER BY last_name ASC")
+    cur.execute("SELECT * FROM admins ORDER BY last_name ASC")
 
-    admins = dict_cur.fetchall()
+    admins = cur.fetchall()
 
     if admins:
         return render_template('admin.html',
@@ -416,7 +403,7 @@ def admin():
                                Title="Admin",
                                msg=msg)
     # Close dictionary cursor
-    dict_cur.close()
+    cur.close()
 
     # Close connection
     conn.close()
@@ -452,10 +439,10 @@ def update_role(admin_id, role):
         values = (role, admin_id)
 
         # Get a connection to database
-        conn = get_conn()
+        conn, cur = connect()
 
         # Get a cursor and execute query
-        with conn.cursor() as cur:
+        with cur as cur:
             sql = ''' UPDATE admins
                       SET role = %s
                       WHERE admin_id = %s'''
@@ -500,14 +487,10 @@ def search():
         search_last_name = request.form['search_last_name'].capitalize()
 
         # Get a connection to database
-        conn = get_conn()
-
-        # dict cursors allows access to the retrieved records using an
-        # interface similar to the Python dictionaries to perform queries
-        dict_cur = get_dict_cur()
+        conn, cur = connect()
 
         # Get Members
-        dict_cur.execute(
+        cur.execute(
             '''SELECT * FROM members
                WHERE first_name like %s
                AND last_name like %s
@@ -515,7 +498,7 @@ def search():
                 ('%' + search_first_name + '%'),
                 ('%' + search_last_name + '%')))
 
-        members = dict_cur.fetchall()
+        members = cur.fetchall()
 
         if members:
             return render_template('dashboard.html',
@@ -529,7 +512,7 @@ def search():
                                    msg=msg)
 
         # Close dictionary cursor
-        dict_cur.close()
+        cur.close()
 
         # Close connection
         conn.close()
@@ -582,10 +565,10 @@ def add_member():
                   assigned_elder_last_name)
 
         # Get a connection to database
-        conn = get_conn()
+        conn, cur = connect()
 
         # Get curson and execute query
-        with conn.cursor() as cur:
+        with cur as cur:
             sql = ''' INSERT INTO members (
                             first_name,
                             last_name,
@@ -639,19 +622,15 @@ def edit_member(member_id):
         Renders template for dashboard upon successful post request
     """
     # Get a connection to database
-    conn = get_conn()
-
-    # dict cursors allows access to the retrieved records using an
-    # interface similar to the Python dictionaries to perform queries
-    dict_cur = get_dict_cur()
+    conn, cur = connect()
 
     # Execute
-    dict_cur.execute("SELECT * FROM members where member_id = %s", [member_id])
+    cur.execute("SELECT * FROM members where member_id = %s", [member_id])
 
-    member = dict_cur.fetchone()
+    member = cur.fetchone()
 
     # Close dictionary cursor
-    dict_cur.close()
+    cur.close()
 
     # Get form
     form = MemberForm()
@@ -699,10 +678,10 @@ def edit_member(member_id):
                   member[0])
 
         # Get a connection to database
-        conn = get_conn()
+        conn, cur = connect()
 
         # Get cursor and execute query
-        with conn.cursor() as cur:
+        with cur as cur:
             sql = ''' UPDATE members
                       SET
                         first_name = %s,
@@ -758,18 +737,14 @@ def delete_member(member_id):
         Renders template for deleting a member upon successful post request
     """
     # Get a connection to database
-    conn = get_conn()
-
-    # dict cursors allows access to the retrieved records using an
-    # interface similar to the Python dictionaries to perform queries
-    dict_cur = get_dict_cur()
+    conn, cur = connect()
 
     # Execute
-    dict_cur.execute("SELECT * FROM members where member_id = %s", [member_id])
-    member_to_delete = dict_cur.fetchone()
+    cur.execute("SELECT * FROM members where member_id = %s", [member_id])
+    member_to_delete = cur.fetchone()
 
     # Close dictionary cursor
-    dict_cur.close()
+    cur.close()
 
     # Close connection
     conn.close()
@@ -798,7 +773,7 @@ def final_delete(member_id):
     # Get a connection to database
 
     values = [member_id]
-    conn = get_conn()
+    conn, cur = connect()
 
     # Get cursor
     with conn.cursor() as cur:
@@ -836,13 +811,9 @@ def ages():
         Renders age html page
     """
     # Get a connection to database
-    conn = get_conn()
+    conn, cur = connect()
 
-    # dict cursors allows access to the retrieved records using an
-    # interface similar to the Python dictionaries to perform queries
-    dict_cur = get_dict_cur()
-
-    dict_cur.execute('''SELECT
+    cur.execute('''SELECT
                             first_name,
                             last_name,
                             extract(month from birthdate) AS month,
@@ -851,7 +822,7 @@ def ages():
                         FROM members
                         ORDER BY first_name''')
 
-    members_ages = dict_cur.fetchall()
+    members_ages = cur.fetchall()
     if members_ages is not None:
         birthdate_dict = {}
         birthdate_dict = {(member_age[1] + ", " + member_age[0]): str(get_age(
@@ -869,7 +840,7 @@ def ages():
         return render_template('ages.html', Title="Member's Age", msg=msg)
 
     # Close dictionary cursor
-    dict_cur.close()
+    cur.close()
 
     # Close connection
     conn.close()

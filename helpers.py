@@ -11,13 +11,14 @@ from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
 
-def get_conn():
+def connect():
     """Get database connection.
 
     This function establishes a connection with the database.
 
     Returns:
         conn -- connection to the dB
+        cur -- cursor to execute queries in dB
     """
     # Get a connection to database
     try:
@@ -25,24 +26,13 @@ def get_conn():
                                 user=os.environ.get('DB_USER'),
                                 password=os.environ.get('DB_PASSWORD'),
                                 host='localhost')
-        return conn
+        # dict cursors allows access to the retrieved records using an
+        # interface similar to the Python dictionaries to perform queries
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        return conn, cur
     except:
         print("No connection to database established!")
         return None
-
-
-def get_dict_cur():
-    """Get a Dictionary cursor.
-
-    This funciton obtains a dict cursor which allows access to the retrieved
-    records using an interface similar to the Python dictionaries to perform
-    queries
-
-    Returns:
-        dict_cur -- a dictionary cursor
-    """
-    dict_cur = get_conn().cursor(cursor_factory=psycopg2.extras.DictCursor)
-    return dict_cur
 
 
 def get_age(birthmonth, birthday, birthyear):
@@ -113,14 +103,11 @@ def verify_reset_token(token):
         return redirect(url_for('reset_request'))
 
     # If token valid, get a connection to the database
-    conn = psycopg2.connect(database=os.environ.get('DB_NAME'),
-                            user=os.environ.get('DB_USER'),
-                            password=os.environ.get('DB_PASSWORD'),
-                            host='localhost')
+    cur, conn = connect()
 
     # dict cursors allows access to the retrieved records using an interface
     # similar to the Python dictionaries to perform queries
-    dict_cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    dict_cur = cur(cursor_factory=psycopg2.extras.DictCursor)
 
     # Check to see if email exist for user_id
     dict_cur.execute("SELECT * FROM admins WHERE admin_id = %s",
