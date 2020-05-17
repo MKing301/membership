@@ -46,51 +46,56 @@ def register():
         Renders template for registration page upon get request
         Renders template for login page upon successful post request
     """
-    form = RegisterForm()
-    if form.validate_on_submit():
-        first_name = request.form['first_name'].title()
-        last_name = request.form['last_name'].title()
-        username = request.form['username'].lower()
-        email = request.form['email']
-        password = sha256_crypt.hash(str(request.form['password']))
+    try:
+        if session['username']:
+            flash(f'You are already logged in as {session["username"]}', 'info')
+            return redirect(url_for('dashboard'))
+    except:
+        form = RegisterForm()
+        if form.validate_on_submit():
+            first_name = request.form['first_name'].title()
+            last_name = request.form['last_name'].title()
+            username = request.form['username']
+            email = request.form['email'].lower()
+            password = sha256_crypt.hash(str(request.form['password']))
 
-        values = (first_name,
-                  last_name,
-                  username,
-                  email,
-                  password,
-                  'pending',
-                  datetime.now())
-        # Get a connection to database
-        conn, cur = connect()
+            values = (first_name,
+                    last_name,
+                    username,
+                    email,
+                    password,
+                    'pending',
+                    datetime.now())
+            # Get a connection to database
+            conn, cur = connect()
 
-        # Get cursor and execute query
-        with cur as cur:
-            sql = '''INSERT INTO admins(
-                        first_name,
-                        last_name,
-                        username,
-                        email,
-                        password,
-                        role,
-                        registered_date)
-                     VALUES(%s, %s, %s, %s, %s, %s, %s)'''
-            cur.execute(sql, values)
+            # Get cursor and execute query
+            with cur as cur:
+                sql = '''INSERT INTO admins(
+                            first_name,
+                            last_name,
+                            username,
+                            email,
+                            password,
+                            role,
+                            registered_date)
+                        VALUES(%s, %s, %s, %s, %s, %s, %s)'''
+                cur.execute(sql, values)
 
-        # Commit
-        conn.commit()
+            # Commit
+            conn.commit()
 
-        # Close cursor
-        cur.close()
+            # Close cursor
+            cur.close()
 
-        # Close connection
-        conn.close()
+            # Close connection
+            conn.close()
 
-        flash('You are now registered!', 'success')
-        return redirect(url_for('login'))
+            flash('You are now registered!', 'success')
+            return redirect(url_for('login'))
 
-    else:
-        return render_template('register.html', Title="Register", form=form)
+        else:
+            return render_template('register.html', Title="Register", form=form)
 
 
 # User login
@@ -109,53 +114,58 @@ def login():
 
         Renders template for dashboard page upon successful post request
     """
-    form = LoginForm()
-    if form.validate_on_submit():
-        # Get form field
-        email = request.form['email'].lower()
-        password_candidate = request.form['password']
+    try:
+        if session['username']:
+            flash(f'You are already logged in as {session["username"]}', 'info')
+            return redirect(url_for('dashboard'))
+    except:
+        form = LoginForm()
+        if form.validate_on_submit():
+            # Get form field
+            email = request.form['email'].lower()
+            password_candidate = request.form['password']
 
-        # Get a connection to database
-        conn, cur = connect()
+            # Get a connection to database
+            conn, cur = connect()
 
-        # Get user by username
-        cur.execute("SELECT * FROM admins WHERE email = %s",
-                         [email])
-        data = cur.fetchone()
+            # Get user by username
+            cur.execute("SELECT * FROM admins WHERE email = %s",
+                            [email])
+            data = cur.fetchone()
 
-        if data:
-            # Get stored hash
-            password = data['password']
+            if data:
+                # Get stored hash
+                password = data['password']
 
-            # Compare passwords
-            if sha256_crypt.verify(password_candidate, password):
-                # Passed
-                session['email'] = email.upper()
-                session['username'] = data['username'].upper()
-                if data['role'] == 'admin':
-                    session['logged_in'] = True
-                    flash('You are now logged in', 'success')
-                    return redirect(url_for('dashboard'))
+                # Compare passwords
+                if sha256_crypt.verify(password_candidate, password):
+                    # Passed
+                    session['email'] = email.lower()
+                    session['username'] = data['username']
+                    if data['role'] == 'admin':
+                        session['logged_in'] = True
+                        flash('You are now logged in', 'success')
+                        return redirect(url_for('dashboard'))
+                    else:
+                        flash('Please contact the Database Administrator.',
+                            'danger')
+                        return render_template(
+                            'login.html', Title="Login", form=form)
                 else:
-                    flash('Please contact the Database Administrator.',
-                          'danger')
-                    return render_template(
-                        'login.html', Title="Login", form=form)
+                    flash('Invalid password.', 'warning')
+                    return render_template('login.html', Title="Login", form=form)
+
             else:
-                flash('Invalid password.', 'warning')
+                flash('Invalid username and/or password!', 'danger')
                 return render_template('login.html', Title="Login", form=form)
 
-        else:
-            flash('Invalid username and/or password!', 'danger')
-            return render_template('login.html', Title="Login", form=form)
+            # Close dictionary cursor
+            cur.close()
 
-        # Close dictionary cursor
-        cur.close()
+            # Close connection
+            conn.close()
 
-        # Close connection
-        conn.close()
-
-    return render_template('login.html', Title="Login", form=form)
+        return render_template('login.html', Title="Login", form=form)
 
 
 # Reset Request Form
