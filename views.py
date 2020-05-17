@@ -91,8 +91,8 @@ def register():
             # Close connection
             conn.close()
 
-            flash('You are now registered!', 'success')
-            return redirect(url_for('login'))
+            flash("You are now registered, but your account is 'pending' authorization. You will receive an email once your account is approved.", 'info')
+            return redirect(url_for('index'))
 
         else:
             return render_template('register.html', Title="Register", form=form)
@@ -134,26 +134,27 @@ def login():
             data = cur.fetchone()
 
             if data:
-                # Get stored hash
-                password = data['password']
+                if data['role'] != 'admin':
+                    flash('Please contact the Database Administrator.',
+                            'danger')
+                    return render_template(
+                            'login.html', Title="Login", form=form)
+                else:
+                    # Get stored hash
+                    password = data['password']
 
-                # Compare passwords
-                if sha256_crypt.verify(password_candidate, password):
-                    # Passed
-                    session['email'] = email.lower()
-                    session['username'] = data['username']
-                    if data['role'] == 'admin':
+                    # Compare passwords
+                    if sha256_crypt.verify(password_candidate, password):
+                        # Passed
+                        session['email'] = email.lower()
+                        session['username'] = data['username']
                         session['logged_in'] = True
                         flash('You are now logged in', 'success')
                         return redirect(url_for('dashboard'))
                     else:
-                        flash('Please contact the Database Administrator.',
-                            'danger')
+                        flash('Invalid password.', 'warning')
                         return render_template(
                             'login.html', Title="Login", form=form)
-                else:
-                    flash('Invalid password.', 'warning')
-                    return render_template('login.html', Title="Login", form=form)
 
             else:
                 flash('Invalid username and/or password!', 'danger')
