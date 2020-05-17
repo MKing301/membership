@@ -18,7 +18,7 @@ def connect():
 
     Returns:
         conn -- connection to the dB
-        cur -- cursor to execute queries in dB
+        cur -- dictionary cursor to execute queries in dB
     """
     # Get a connection to database
     try:
@@ -85,7 +85,7 @@ def get_reset_token(user_id, id):
 def verify_reset_token(token):
     """Verify token of user requesting password reset.
 
-    This funtion is used to verify the user requesting to reset their passward
+    This function is used to verify the user requesting to reset their passward
     is the same user that requested the provided token.
 
     Arguments:
@@ -103,15 +103,18 @@ def verify_reset_token(token):
         return redirect(url_for('reset_request'))
 
     # If token valid, get a connection to the database
-    cur, conn = connect()
-
-    # dict cursors allows access to the retrieved records using an interface
-    # similar to the Python dictionaries to perform queries
-    dict_cur = cur(cursor_factory=psycopg2.extras.DictCursor)
+    conn, cur = connect()
 
     # Check to see if email exist for user_id
-    dict_cur.execute("SELECT * FROM admins WHERE admin_id = %s",
+    cur.execute("SELECT * FROM admins WHERE admin_id = %s",
                      [user_id])
-    data = dict_cur.fetchone()
+    data = cur.fetchone()
+
+    # Close cursor
+    cur.close()
+
+    # Close connection
+    conn.close()
+
     user = data['email']
     return user
