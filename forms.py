@@ -108,10 +108,8 @@ class SearchForm(FlaskForm):
         search_last_name -- search by member's last name
     """
 
-    search_first_name = StringField(
-        'Search First Name', [validators.DataRequired()])
-    search_last_name = StringField(
-        'Search Last Name', [validators.DataRequired()])
+    search_first_name = StringField('Search First Name')
+    search_last_name = StringField('Search Last Name')
 
 
 # Form to Request Reset of Password
