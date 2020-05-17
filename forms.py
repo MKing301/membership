@@ -81,8 +81,13 @@ class MemberForm(FlaskForm):
     street_num = StringField('Street Number', [validators.DataRequired()])
     street_name = StringField('Street Name', [validators.DataRequired()])
     city = StringField('City', [validators.DataRequired()])
-    state = StringField('State', [validators.DataRequired()])
+    state = StringField('State', [validators.DataRequired(), validators.Length(min=2, max=2)])
     postal_code = StringField('Postal Code', [validators.DataRequired()])
+    def validate_postal_code(form, field):
+        if len(field.data) != 5:
+            raise ValueError("Field must be exactly 5 characters")
+        if not field.data.isnumeric():
+            raise ValueError("Field must be numbers only")
     contact_num = StringField('Contact Number', [validators.DataRequired()])
     def validate_contact_num(form, field):
         if len(field.data) != 10:
