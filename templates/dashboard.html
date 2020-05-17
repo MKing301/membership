@@ -1,7 +1,6 @@
 {% extends 'layout.html' %}
-
 {% block body %}
-<div class="page-content">
+<div class="container-flex">
   <h4>Dashboard - <small>Welcome {{ session.username }}</small></h4>
   <a href="/add_member" class="btn btn-primary btn-sm">Add Member</a>
     <hr>
@@ -16,11 +15,9 @@
     		<th class="fit">City</th>
     		<th class="fit">State</th>
     		<th class="fit">Postal Code</th>
-    		<th class="fit">Contact Number</th>
+			<th class="fit">Contact Number</th>
+			<th class="fit">Email</th>
     		<th class="fit">Birthdate</th>
-    		<th class="fit">Tier</th>
-    		<th class="fit">Assigned Elder First Name</th>
-    		<th class="fit">Assigned Elder Last Name</th>
     		<th class="fit"></th>
     		<th class="fit"></th>
     	</tr>
@@ -32,13 +29,11 @@
     			<td class="fit">{{member.street_num}}</td>
     			<td class="fit">{{member.street_name}}</td>
     			<td class="fit">{{member.city}}</td>
-    			<td class="fit">{{member.state}}</td>
+    			<td class="fit">{{member._state}}</td>
     			<td class="fit">{{member.postal_code}}</td>
-    			<td class="fit">{{member.contact_num}}</td>
+				<td class="fit">{{member.contact_num}}</td>
+				<td class="fit">{{member.email}}</td>
     			<td class="fit">{{member.birthdate}}</td>
-    			<td class="fit">{{member.member_tier}}</td>
-    			<td class="fit">{{member.assigned_elder_first_name}}</td>
-    			<td class="fit">{{member.assigned_elder_last_name}}</td>
     			<td><a href="edit_member/{{member.member_id}}" class="btn btn-secondary btn-sm pull-right">Edit</a></td>
     			<td class="fit">
     				<form action="{{url_for('delete_member', member_id=member.member_id)}}" method="POST">
