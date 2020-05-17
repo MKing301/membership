@@ -1,49 +1,76 @@
 {% extends 'layout.html' %}
-
 {% block body %}
-<div class="page-content">
-<h4>Add Member</h4>
+<div class="container">
     {% from "includes/_formhelpers.html" import render_field %}
         <form action="{{ url_for('add_member') }}" method="POST">
-        {{ form.csrf_token }}
-            <div class="form-group">
-                {{ render_field(form.first_name, class_="form-control") }}
+            {{ form.csrf_token }}
+            <form-group form-group>
+			<h1 class="h3 mb-3 font-weight-normal">Add Member</h1>
+            <div class="row">
+                <div class="col-sm">
+					<div class="form-group">
+                        {{ render_field(form.first_name, class_="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm">
+					<div class="form-group">
+                        {{ render_field(form.last_name, class_="form-control") }}
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                {{ render_field(form.last_name, class_="form-control") }}
+            <div class="row">
+                <div class="col-sm">
+                    <div class="form-group">
+                        {{ render_field(form.street_num, class_="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="form-group">
+                        {{ render_field(form.street_name, class_="form-control") }}
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                {{ render_field(form.street_num, class_="form-control") }}
+            <div class="row">
+                <div class="col-sm">
+                    <div class="form-group">
+                        {{ render_field(form.city, class_="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="form-group">
+                        {{ render_field(form.state, class_="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="form-group">
+                        {{ render_field(form.postal_code, class_="form-control") }}
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                {{ render_field(form.street_name, class_="form-control") }}
+            <div class="row">
+                <div class="col-sm">
+                    <div class="form-group">
+                        {{ render_field(form.contact_num, class_="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="form-group">
+                        {{ render_field(form.email, class_="form-control") }}
+                    </div>
+                </div>
+                <div class="col-sm">
+                    <div class="form-group">
+                        {{ render_field(form.birthdate, class_="form-control") }}
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                {{ render_field(form.city, class_="form-control") }}
+            <div class="row">
+				<div class="col-sm">
+                    <input class="btn btn-primary" type="submit" value="Add">
+                    <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+                </div>
             </div>
-            <div class="form-group">
-                {{ render_field(form.state, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(form.postal_code, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(form.contact_num, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(form.birthdate, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(form.member_tier, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(form.assigned_elder_first_name, class_="form-control") }}
-            </div>
-            <div class="form-group">
-                {{ render_field(form.assigned_elder_last_name, class_="form-control") }}
-            </div>
-            <input class="btn btn-primary" type="submit" value="Add">
-            <a href="/dashboard" class="btn btn-secondary">Cancel</a>
-      </form>
-<div>
+        </form-group>
+	</form>
+</div>
 {% endblock %}
