@@ -546,45 +546,36 @@ def add_member():
         state = request.form['state']
         postal_code = request.form['postal_code']
         contact_num = request.form['contact_num']
+        email = request.form['email']
         birthdate = request.form['birthdate']
-        member_tier = request.form['member_tier']
-        assigned_elder_first_name = request.form['assigned_elder_first_name']
-        assigned_elder_last_name = request.form['assigned_elder_last_name']
-
-        values = (first_name,
-                  last_name,
-                  street_num,
-                  street_name,
-                  city,
-                  state,
-                  postal_code,
-                  contact_num,
-                  birthdate,
-                  member_tier,
-                  assigned_elder_first_name,
-                  assigned_elder_last_name)
 
         # Get a connection to database
         conn, cur = connect()
 
         # Get curson and execute query
-        with cur as cur:
-            sql = ''' INSERT INTO members (
-                            first_name,
-                            last_name,
-                            street_num,
-                            street_name,
-                            city,
-                            state,
-                            postal_code,
-                            contact_num,
-                            birthdate,
-                            member_tier,
-                            assigned_elder_first_name,
-                            assigned_elder_last_name)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s,
-                              %s, %s, %s, %s, %s)'''
-            cur.execute(sql, values)
+
+        cur.execute('''INSERT INTO members (
+                first_name,
+                last_name,
+                street_num,
+                street_name,
+                city,
+                _state,
+                postal_code,
+                contact_num,
+                email,
+                birthdate)
+            VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ''',(first_name,
+                 last_name,
+                 street_num,
+                 street_name,
+                 city,
+                 state,
+                 postal_code,
+                 contact_num,
+                 email,
+                 birthdate))
 
         # Commit
         conn.commit()
@@ -596,10 +587,9 @@ def add_member():
         conn.close()
 
         flash('Member Added!', 'success')
-
         return redirect(url_for('dashboard'))
-
-    return render_template('add_member.html', Title="Add Member", form=form)
+    else:
+        return render_template('add_member.html', Title="Add Member", form=form)
 
 
 # Edit Member
@@ -634,22 +624,23 @@ def edit_member(member_id):
 
     # Get form
     form = MemberForm()
+    if not form.validate_on_submit():
+        # Populate member fields
+        form.first_name.data = member['first_name']
+        form.last_name.data = member['last_name']
+        form.street_num.data = member['street_num']
+        form.street_name.data = member['street_name']
+        form.city.data = member['city']
+        form.state.data = member['_state']
+        form.postal_code.data = member['postal_code']
+        form.contact_num.data = member['contact_num']
+        form.email.data = member['email']
+        form.birthdate.data = member['birthdate']
 
-    # Populate member fields
-    form.first_name.data = member['first_name']
-    form.last_name.data = member['last_name']
-    form.street_num.data = member['street_num']
-    form.street_name.data = member['street_name']
-    form.city.data = member['city']
-    form.state.data = member['state']
-    form.postal_code.data = member['postal_code']
-    form.contact_num.data = member['contact_num']
-    form.birthdate.data = member['birthdate']
-    form.member_tier.data = member['member_tier']
-    form.assigned_elder_first_name.data = member['assigned_elder_first_name']
-    form.assigned_elder_last_name.data = member['assigned_elder_last_name']
+        return render_template('edit_member.html',
+                            Title="Edit Member", member_id=member[0], form=form)
 
-    if request.method == 'POST' and form.validate():
+    else:
         first_name = request.form['first_name']
         last_name = request.form['last_name']
         street_num = request.form['street_num']
@@ -658,10 +649,8 @@ def edit_member(member_id):
         state = request.form['state']
         postal_code = request.form['postal_code']
         contact_num = request.form['contact_num']
+        email = request.form['email']
         birthdate = request.form['birthdate']
-        member_tier = request.form['member_tier']
-        assigned_elder_first_name = request.form['assigned_elder_first_name']
-        assigned_elder_last_name = request.form['assigned_elder_last_name']
 
         values = (first_name,
                   last_name,
@@ -671,11 +660,10 @@ def edit_member(member_id):
                   state,
                   postal_code,
                   contact_num,
+                  email,
                   birthdate,
-                  member_tier,
-                  assigned_elder_first_name,
-                  assigned_elder_last_name,
                   member[0])
+
 
         # Get a connection to database
         conn, cur = connect()
@@ -689,15 +677,15 @@ def edit_member(member_id):
                         street_num = %s,
                         street_name = %s,
                         city = %s,
-                        state = %s,
+                        _state = %s,
                         postal_code = %s,
                         contact_num = %s,
-                        birthdate = %s,
-                        member_tier = %s,
-                        assigned_elder_first_name = %s,
-                        assigned_elder_last_name = %s
+                        email = %s,
+                        birthdate = %s
                       WHERE member_id = %s'''
+
             cur.execute(sql, values)
+
 
         # Commit
         conn.commit()
@@ -709,11 +697,7 @@ def edit_member(member_id):
         conn.close()
 
         flash('Member Updated!', 'success')
-
         return redirect(url_for('dashboard'))
-
-    return render_template('edit_member.html',
-                           Title="Edit Member", member_id=member[0], form=form)
 
 
 # Delete Member
