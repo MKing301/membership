@@ -48,9 +48,9 @@ def register():
     """
     form = RegisterForm()
     if form.validate_on_submit():
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
-        username = request.form['username']
+        first_name = request.form['first_name'].title()
+        last_name = request.form['last_name'].title()
+        username = request.form['username'].lower()
         email = request.form['email']
         password = sha256_crypt.hash(str(request.form['password']))
 
@@ -112,7 +112,7 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         # Get form field
-        email = request.form['email']
+        email = request.form['email'].lower()
         password_candidate = request.form['password']
 
         # Get a connection to database
@@ -184,7 +184,7 @@ def reset_request():
         form = ResetRequestForm()
         if form.validate_on_submit():
             # Get form field
-            email = request.form['email']
+            email = request.form['email'].lower()
             # Get a connection to database
             conn, cur = connect()
             try:
@@ -222,13 +222,14 @@ no changes will be made.
                           your password''', 'info')
                     return redirect(url_for('login'))
 
-                    # Close dictionary cursor
-                    cur.close()
-
-                    # Close connection
-                    conn.close()
             except:
                 flash('There is no account with that email.', 'warning')
+
+            # Close dictionary cursor
+            cur.close()
+
+            # Close connection
+            conn.close()
 
     return render_template('reset_request.html',
                            Title="Request Password Reset",
@@ -252,7 +253,7 @@ def reset_password(token):
     Returns:
         Renders template to reset password on get requests
         Renders template for dashboard if user logged in
-        Renders login screen after databse updated with new password
+        Renders login screen after database updated with new password
     """
     try:
         if session['email']:
@@ -334,7 +335,7 @@ def is_logged_in(f):
 def dashboard():
     """The route for application dashboard.
 
-    This funtions displays the user's dashboard.
+    This functions displays the user's dashboard.
 
     Decorators:
         app.route
@@ -483,8 +484,8 @@ def search():
     """
     form = SearchForm()
     if form.validate_on_submit():
-        search_first_name = request.form['search_first_name'].capitalize()
-        search_last_name = request.form['search_last_name'].capitalize()
+        search_first_name = request.form['search_first_name'].title()
+        search_last_name = request.form['search_last_name'].title()
 
         # Get a connection to database
         conn, cur = connect()
@@ -538,15 +539,15 @@ def add_member():
     """
     form = MemberForm()
     if form.validate_on_submit():
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
+        first_name = request.form['first_name'].title()
+        last_name = request.form['last_name'].title()
         street_num = request.form['street_num']
-        street_name = request.form['street_name']
-        city = request.form['city']
-        state = request.form['state']
+        street_name = request.form['street_name'].title()
+        city = request.form['city'].title()
+        state = request.form['state'].upper()
         postal_code = request.form['postal_code']
         contact_num = request.form['contact_num']
-        email = request.form['email']
+        email = request.form['email'].lower()
         birthdate = request.form['birthdate']
 
         # Get a connection to database
@@ -641,15 +642,15 @@ def edit_member(member_id):
                             Title="Edit Member", member_id=member[0], form=form)
 
     else:
-        first_name = request.form['first_name']
-        last_name = request.form['last_name']
+        first_name = request.form['first_name'].title()
+        last_name = request.form['last_name'].title()
         street_num = request.form['street_num']
-        street_name = request.form['street_name']
-        city = request.form['city']
-        state = request.form['state']
+        street_name = request.form['street_name'].title()
+        city = request.form['city'].title()
+        state = request.form['state'].upper()
         postal_code = request.form['postal_code']
         contact_num = request.form['contact_num']
-        email = request.form['email']
+        email = request.form['email'].lower()
         birthdate = request.form['birthdate']
 
         values = (first_name,
