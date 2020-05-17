@@ -72,10 +72,8 @@ class MemberForm(FlaskForm):
         state -- member's state
         postal_code -- member's postal_code
         contact_num -- member's contact_num
+        email -- member's email
         birthdate -- member's birthdate
-        member_tier -- member's tier
-        assigned_elder_first_name -- member's assigned elder first name
-        assigned_elder_last_name -- member's assigned elder last name
     """
 
     first_name = StringField('First Name', [validators.DataRequired()])
@@ -86,12 +84,13 @@ class MemberForm(FlaskForm):
     state = StringField('State', [validators.DataRequired()])
     postal_code = StringField('Postal Code', [validators.DataRequired()])
     contact_num = StringField('Contact Number', [validators.DataRequired()])
+    def validate_contact_num(form, field):
+        if len(field.data) != 10:
+            raise ValueError("Field must be exactly 10 characters")
+        if not field.data.isnumeric():
+            raise ValueError("Field must be numbers only")
+    email = StringField('Email', [validators.Email(message="Invalid email!")])
     birthdate = DateField('Birthdate', format='%Y-%m-%d')
-    member_tier = IntegerField('Member Tier', [validators.DataRequired()])
-    assigned_elder_first_name = StringField(
-        'Assigned Elder First Name', [validators.DataRequired()])
-    assigned_elder_last_name = StringField(
-        'Assigned Elder Last Name', [validators.DataRequired()])
 
 
 # Search Form
