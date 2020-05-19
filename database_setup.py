@@ -38,7 +38,7 @@ create_queries = [
         username VARCHAR(50) NOT NULL,
         email VARCHAR(50) NOT NULL,
         password TEXT,
-        role VARCHAR(6) NOT NULL,
+        role VARCHAR(7) NOT NULL,
         registered_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
         )'''
 ]
@@ -82,7 +82,7 @@ cur.execute('''INSERT INTO admins(
       datetime.now()))
 
 
-# Insert initial admin
+# Insert initial member
 
 # Execute query
 cur.execute('''INSERT INTO members(
