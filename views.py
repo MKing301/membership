@@ -428,7 +428,7 @@ def admin():
 def update_role(admin_id, role):
     """The route for updating admin role.
 
-    This funtions allows admin user to toggle admin role between 'admin'
+    This functions allows admin user to toggle admin role between 'admin'
     and 'pending'. 'admin' role can log into application, but 'pending' role
     cannot log into the application.
 
@@ -518,10 +518,8 @@ def search():
                                    members=members)
 
         else:
-            msg = 'No Members Found'
-            return render_template('dashboard.html',
-                                   Title="Dashboard",
-                                   msg=msg)
+            flash('No members found, please try again.', 'info')
+            return redirect(url_for('search'))
 
         # Close dictionary cursor
         cur.close()
