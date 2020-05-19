@@ -4,9 +4,21 @@ This module contains all of the forms used by the application.
 """
 
 from flask_wtf import FlaskForm, RecaptchaField
-from wtforms import StringField, PasswordField, DateField, IntegerField
+from wtforms import StringField, PasswordField, DateField, IntegerField, SelectField
 from wtforms import validators
 
+
+STATES = [("", ""), ("AL", "AL"), ("AK", "AK"), ("AZ", "AZ"), ("AR","AR"),
+          ("CA", "CA"), ("CO", "CO"), ("CT", "CT"), ("DC", "DC"), ("DE", "DE"),
+          ("FL", "FL"), ("GA", "GA"), ("HI", "HI"), ("ID", "ID"), ("IL", "IL"),
+          ("IN", "IN"), ("IA", "IA"), ("KS", "KS"), ("KY", "KY"), ("LA", "LA"),
+          ("ME", "ME"), ("MD", "MD"), ("MA", "MA"), ("MI", "MI"), ("MN", "MN"),
+          ("MS", "MS"), ("MO", "MO"), ("MT", "MT"), ("NE", "NE"), ("NV", "NV"),
+          ("NH", "NH"), ("NJ", "NJ"), ("NM", "NM"), ("NY", "NY"), ("NC", "NC"),
+          ("ND", "ND"), ("OH", "OH"), ("OK", "OK"), ("OR", "OR"), ("PA", "PA"),
+          ("RI", "RI"), ("SC", "SC"), ("SD", "SD"), ("TN", "TN"), ("TX", "TX"),
+          ("UT","UT"), ("VT", "VT"), ("VA", "VA"), ("WA", "WA"), ("WV","WV"),
+          ("WI", "WI"), ("WY","WY")]
 
 # Register Class
 class RegisterForm(FlaskForm):
@@ -81,7 +93,10 @@ class MemberForm(FlaskForm):
     street_num = StringField('Street Number', [validators.DataRequired()])
     street_name = StringField('Street Name', [validators.DataRequired()])
     city = StringField('City', [validators.DataRequired()])
-    state = StringField('State', [validators.DataRequired(), validators.Length(min=2, max=2)])
+    state = SelectField(u'State', choices=STATES)
+    def validate_state(form, field):
+        if field.data == "":
+            raise ValueError("Please select a value from the dropdown")
     postal_code = StringField('Postal Code', [validators.DataRequired()])
     def validate_postal_code(form, field):
         if len(field.data) != 5:
