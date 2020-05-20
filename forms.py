@@ -110,7 +110,7 @@ class MemberForm(FlaskForm):
         if not field.data.isnumeric():
             raise ValueError("Field must be numbers only")
     email = StringField('Email', [validators.Email(message="Invalid email!")])
-    birthdate = DateField('Birthdate', format='%Y-%m-%d')
+    birthdate = DateField('Birthdate', [validators.DataRequired(message="Must be in yyyy-m-d format")], format='%Y-%m-%d')
 
 
 # Search Form
