@@ -51,7 +51,9 @@ def get_age(birthmonth, birthday, birthyear):
     currentyear = datetime.now().year
     currentmonth = datetime.now().month
     currentday = datetime.now().day
-    if currentyear >= birthyear:
+    if currentyear < birthyear:
+        return -1
+    else:
         if currentmonth < birthmonth:
             age = (currentyear - birthyear) - 1
         elif currentmonth > birthmonth:
