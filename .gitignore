@@ -2,5 +2,7 @@
 __pycache__
 venv
 .vscode/
+directory.csv
+import_data.py
 
 
