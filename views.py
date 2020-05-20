@@ -48,24 +48,24 @@ def register():
     """
     try:
         if session['username']:
-            flash(f'You are already logged in as {session["username"]}', 'info')
+            flash(f'You are already logged in as {session["username"]}. You must log out to register another user.', 'info')
             return redirect(url_for('dashboard'))
     except:
         form = RegisterForm()
         if form.validate_on_submit():
             first_name = request.form['first_name'].title()
             last_name = request.form['last_name'].title()
-            username = request.form['username']
+            username = request.form['username'].upper()
             email = request.form['email'].lower()
             password = sha256_crypt.hash(str(request.form['password']))
 
             values = (first_name,
-                    last_name,
-                    username,
-                    email,
-                    password,
-                    'pending',
-                    datetime.now())
+                      last_name,
+                      username,
+                      email,
+                      password,
+                      'pending',
+                      datetime.now())
             # Get a connection to database
             conn, cur = connect()
 
@@ -116,7 +116,7 @@ def login():
     """
     try:
         if session['username']:
-            flash(f'You are already logged in as {session["username"]}', 'info')
+            flash(f'You are already logged in as {session["username"]}. You must log out to login as another user.', 'info')
             return redirect(url_for('dashboard'))
     except:
         form = LoginForm()
@@ -808,26 +808,26 @@ def ages():
     conn, cur = connect()
 
     cur.execute('''SELECT
-                            first_name,
-                            last_name,
-                            extract(month from birthdate) AS month,
-                            extract(day from birthdate) AS day,
-                            extract(year from birthdate) AS year
-                        FROM members
-                        ORDER BY first_name''')
+                        first_name,
+                        last_name,
+                        birthdate
+                    FROM members''')
 
     members_ages = cur.fetchall()
-    if members_ages is not None:
-        birthdate_dict = {}
-        birthdate_dict = {(member_age[1] + ", " + member_age[0]): str(get_age(
-                          int(member_age[2]),
-                          int(member_age[3]),
-                          int(member_age[4])))
-                          for member_age in members_ages}
-        birthdate_dict_sorted = sorted(birthdate_dict.items())
+    if members_ages:
+        birthdate_dict = []
+        for member_age in members_ages:
+            bday = member_age['birthdate']
+            birthdate_dict.append({'first name': member_age['first_name'],
+                                   'last name': member_age['last_name'],
+                                   'age': (get_age(
+                                        int(bday.month),
+                                        int(bday.day),
+                                        int(bday.year)))})
+        birthdate_dict = sorted(birthdate_dict, key=lambda i: i['age'], reverse=True)
         return render_template('ages.html',
                                Title="Member's Age",
-                               birthdate_dict_sorted=birthdate_dict_sorted)
+                               birthdate_dict=birthdate_dict)
 
     else:
         msg = 'No members; therefore, no ages displayed.'
