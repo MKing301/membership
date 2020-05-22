@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block body %}
 <div class="container-flex">
-  <h4>Dashboard - <small>Welcome {{ session.username }}</small></h4>
+  <h4>Dashboard - <small>Welcome <b><i style="color: purple;">{{ session.username }}</i></b></small></h4>
   <a href="/add_member" class="btn btn-primary btn-sm">Add Member</a>
     <hr>
     <h5>{APP NAME HERE} Member List</h5>
