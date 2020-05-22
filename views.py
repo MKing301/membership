@@ -6,6 +6,8 @@ This module contain all of the routes for the application.
 import os
 import psycopg2
 import psycopg2.extras
+import logging
+
 from datetime import datetime
 from membersapp import app, mail
 from helpers import (connect, get_age, get_reset_token,
@@ -16,6 +18,30 @@ from flask import render_template, flash, redirect, url_for, request, session
 from flask_mail import Message
 from passlib.hash import sha256_crypt
 from functools import wraps
+from logging.handlers import TimedRotatingFileHandler
+
+
+# Set Logger
+logger = logging.getLogger(__name__)
+
+# Set logging level
+logger.setLevel(logging.DEBUG)
+
+# Define logging formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Create file handler to rotate based on time
+file_handler = TimedRotatingFileHandler(
+    '/home/mfsd1809/Dev/FullStackWebDeveloper/GitRepos/membership/log_dir/views.log',
+    when='m',
+    interval=1,
+    backupCount=6)
+
+# Here we set our logHandler's formatter
+file_handler.setFormatter(formatter)
+
+# Add handler
+logger.addHandler(file_handler)
 
 
 # Home Page
@@ -92,6 +118,7 @@ def register():
             conn.close()
 
             flash("You are now registered, but your account is 'pending' authorization. You will receive an email once your account is approved.", 'info')
+            logger.info(f'{username} registered.')
             return redirect(url_for('index'))
 
         else:
@@ -129,14 +156,13 @@ def login():
             conn, cur = connect()
 
             # Get user by username
-            cur.execute("SELECT * FROM admins WHERE email = %s",
-                            [email])
+            cur.execute("SELECT * FROM admins WHERE email = %s", [email])
             data = cur.fetchone()
 
             if data:
                 if data['role'] != 'admin':
                     flash('Please contact the Database Administrator.',
-                            'danger')
+                          'danger')
                     return render_template(
                             'login.html', Title="Login", form=form)
                 else:
@@ -150,6 +176,7 @@ def login():
                         session['username'] = data['username']
                         session['logged_in'] = True
                         flash('You are now logged in', 'success')
+                        logger.info(f'{session["email"]} logged into app.')
                         return redirect(url_for('dashboard'))
                     else:
                         flash('Invalid password.', 'warning')
@@ -231,6 +258,7 @@ no changes will be made.
                     mail.send(msg)
                     flash('''An email has been sent with instructions to reset
                           your password''', 'info')
+                    logging.info(f'Email sent to {user} to reset password.')
                     return redirect(url_for('login'))
 
             except:
@@ -308,6 +336,7 @@ def reset_password(token):
                 conn.close()
 
                 flash('Your password has been updated.', 'success')
+                logger.info(f'{user} changed password.')
                 return redirect(url_for('login'))
             else:
                 return render_template('reset_password.html',
@@ -357,7 +386,6 @@ def dashboard():
     """
     # Get a connection to database
     conn, cur = connect()
-
 
     # Get Members
     cur.execute("SELECT * FROM members ORDER BY last_name ASC")
@@ -470,6 +498,7 @@ def update_role(admin_id, role):
         conn.close()
 
         flash('Role Updated!', 'success')
+        logger.info(f'{session["email"]} updated Admin ID {admin_id} role.')
 
         return redirect(url_for('admin'))
 
@@ -576,16 +605,16 @@ def add_member():
                 email,
                 birthdate)
             VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ''',(first_name,
-                 last_name,
-                 street_num,
-                 street_name,
-                 city,
-                 state,
-                 postal_code,
-                 contact_num,
-                 email,
-                 birthdate))
+            ''', (first_name,
+                  last_name,
+                  street_num,
+                  street_name,
+                  city,
+                  state,
+                  postal_code,
+                  contact_num,
+                  email,
+                  birthdate))
 
         # Commit
         conn.commit()
@@ -597,6 +626,7 @@ def add_member():
         conn.close()
 
         flash('Member Added!', 'success')
+        logger.info(f'{session["email"]} added {first_name} {last_name}.')
         return redirect(url_for('dashboard'))
     else:
         return render_template('add_member.html', Title="Add Member", form=form)
@@ -648,7 +678,7 @@ def edit_member(member_id):
         form.birthdate.data = member['birthdate']
 
         return render_template('edit_member.html',
-                            Title="Edit Member", member_id=member[0], form=form)
+                               Title="Edit Member", member_id=member[0], form=form)
 
     else:
         first_name = request.form['first_name'].title()
@@ -674,7 +704,6 @@ def edit_member(member_id):
                   birthdate,
                   member[0])
 
-
         # Get a connection to database
         conn, cur = connect()
 
@@ -696,7 +725,6 @@ def edit_member(member_id):
 
             cur.execute(sql, values)
 
-
         # Commit
         conn.commit()
 
@@ -707,6 +735,7 @@ def edit_member(member_id):
         conn.close()
 
         flash('Member Updated!', 'success')
+        logger.info(f'{session["email"]} updated {first_name} {last_name}.')
         return redirect(url_for('dashboard'))
 
 
@@ -784,6 +813,7 @@ def final_delete(member_id):
     conn.close()
 
     flash('Member Deleted!', 'success')
+    logger.info(f'{session["email"]} deleted Member ID {member_id}.')
 
     return redirect(url_for('dashboard'))
 
@@ -855,6 +885,8 @@ def logout():
     Returns:
         Renders login page
     """
+    logger.info(f'{session["email"]} logged out of app.')
     session.clear()
     flash('You are now logged out', 'success')
+
     return redirect(url_for('login'))
