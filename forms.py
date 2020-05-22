@@ -20,6 +20,7 @@ STATES = [("", ""), ("AL", "AL"), ("AK", "AK"), ("AZ", "AZ"), ("AR","AR"),
           ("UT","UT"), ("VT", "VT"), ("VA", "VA"), ("WA", "WA"), ("WV","WV"),
           ("WI", "WI"), ("WY","WY")]
 
+
 # Register Class
 class RegisterForm(FlaskForm):
     """The Registration Form.
@@ -48,6 +49,7 @@ class RegisterForm(FlaskForm):
     confirm = PasswordField('Confirm Password')
     recaptcha = RecaptchaField()
 
+
 # Login Class
 class LoginForm(FlaskForm):
     """The Login Form.
@@ -65,6 +67,7 @@ class LoginForm(FlaskForm):
     email = StringField('Email', [validators.DataRequired()])
     password = PasswordField('Password', [validators.DataRequired()])
     recaptcha = RecaptchaField()
+
 
 # Member Form Class
 class MemberForm(FlaskForm):
@@ -94,16 +97,19 @@ class MemberForm(FlaskForm):
     street_name = StringField('Street Name', [validators.DataRequired()])
     city = StringField('City', [validators.DataRequired()])
     state = SelectField(u'State', choices=STATES)
+
     def validate_state(form, field):
         if field.data == "":
             raise ValueError("Please select a value from the dropdown")
     postal_code = StringField('Postal Code', [validators.DataRequired()])
+
     def validate_postal_code(form, field):
         if len(field.data) != 5:
             raise ValueError("Field must be exactly 5 characters")
         if not field.data.isnumeric():
             raise ValueError("Field must be numbers only")
     contact_num = StringField('Contact Number', [validators.DataRequired()])
+
     def validate_contact_num(form, field):
         if len(field.data) != 10:
             raise ValueError("Field must be exactly 10 characters")
@@ -148,6 +154,7 @@ class ResetRequestForm(FlaskForm):
 
     email = StringField('Email', [validators.DataRequired()])
     recaptcha = RecaptchaField()
+
 
 # Form to Request Password Reset
 class ResetPasswordForm(FlaskForm):
