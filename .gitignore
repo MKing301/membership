@@ -4,5 +4,5 @@ venv
 .vscode/
 directory.csv
 import_data.py
-
+log_dir/
 
