@@ -3,8 +3,9 @@
 This module contains all of the forms used by the application.
 """
 
+from project.models import User
 from flask_wtf import FlaskForm, RecaptchaField
-from wtforms import StringField, PasswordField, DateField, IntegerField, SelectField
+from wtforms import StringField, PasswordField, DateField, IntegerField, DateTimeField, SelectField, SubmitField, ValidationError
 from wtforms import validators
 
 
@@ -48,6 +49,18 @@ class RegisterForm(FlaskForm):
         validators.equal_to('confirm', message='Passwords do not match.')])
     confirm = PasswordField('Confirm Password')
     recaptcha = RecaptchaField()
+    submit = SubmitField('Register')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user:
+            raise ValidationError('That username is taken.  Please choose a different one.')
+
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user:
+            raise ValidationError('That email is taken.  Please choose a different one.')
 
 
 # Login Class
@@ -67,6 +80,7 @@ class LoginForm(FlaskForm):
     email = StringField('Email', [validators.DataRequired()])
     password = PasswordField('Password', [validators.DataRequired()])
     recaptcha = RecaptchaField()
+    submit = SubmitField('Login')
 
 
 # Member Form Class
@@ -89,6 +103,7 @@ class MemberForm(FlaskForm):
         contact_num -- member's contact_num
         email -- member's email
         birthdate -- member's birthdate
+        inserted_date -- date member inserted into db
     """
 
     first_name = StringField('First Name', [validators.DataRequired()])
@@ -117,6 +132,8 @@ class MemberForm(FlaskForm):
             raise ValueError("Field must be numbers only")
     email = StringField('Email', [validators.Email(message="Invalid email!")])
     birthdate = DateField('Birthdate', [validators.DataRequired(message="Must be in yyyy-m-d format")], format='%Y-%m-%d')
+    submit = SubmitField('Submit')
+    cancel = SubmitField('Cancel')
 
 
 # Search Form
@@ -136,6 +153,7 @@ class SearchForm(FlaskForm):
 
     search_first_name = StringField('Search First Name')
     search_last_name = StringField('Search Last Name')
+    submit = SubmitField('Submit')
 
 
 # Form to Request Reset of Password
@@ -154,6 +172,7 @@ class ResetRequestForm(FlaskForm):
 
     email = StringField('Email', [validators.DataRequired()])
     recaptcha = RecaptchaField()
+    submit = SubmitField('Submit')
 
 
 # Form to Request Password Reset
@@ -175,3 +194,4 @@ class ResetPasswordForm(FlaskForm):
                              message='Passwords do not match.')])
     confirm = PasswordField('Confirm Password')
     recaptcha = RecaptchaField()
+    submit = SubmitField('Submit')

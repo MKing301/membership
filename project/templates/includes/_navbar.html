@@ -1,0 +1,22 @@
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="/">{ORG NAME HERE}</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav mr-auto">
+          <li>
+            <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+          </li>
+        </ul>
+        <ul class="navbar-nav right">
+	    {% if current_user.is_authenticated and current_user.role == 'admin'  %}
+		<li><a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a></li>
+    <li><a class="nav-link" href="{{ url_for('main.admin') }}">Admins</a></li>
+    <li><a class="nav-link" href="{{ url_for('main.search') }}">Search</a></li>
+    <li><a class="nav-link" href="{{ url_for('main.ages') }}">Member's Age</a></li>
+		<li><a class="nav-link" href="{{ url_for('users.logout') }}">Logout</a></li>
+	    {% else %}
+                <li><a class="nav-link" href="{{ url_for('users.register') }}">Register</a></li>
+                <li><a class="nav-link" href="{{ url_for('users.login') }}">Login</a></li>
+	    {% endif %}
+	</ul>
+      </div>
+</nav>

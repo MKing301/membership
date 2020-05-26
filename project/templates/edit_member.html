@@ -2,7 +2,7 @@
 {% block body %}
     <div class="container">
         {% from "includes/_formhelpers.html" import render_field %}
-        <form action="{{ url_for('edit_member', member_id =  member_id) }}" method="POST">
+        <form action="{{ url_for('main.edit_member', id =  id) }}" method="POST">
             {{ form.csrf_token }}
             <form-group form-group>
             <h1 class="h3 mb-3 font-weight-normal">Edit Member</h1>

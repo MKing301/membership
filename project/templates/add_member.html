@@ -2,7 +2,7 @@
 {% block body %}
 <div class="container">
     {% from "includes/_formhelpers.html" import render_field %}
-        <form action="{{ url_for('add_member') }}" method="POST">
+        <form action="{{ url_for('main.add_member') }}" method="POST">
             {{ form.csrf_token }}
             <form-group form-group>
 			<h1 class="h3 mb-3 font-weight-normal">Add Member</h1>
@@ -66,8 +66,8 @@
             </div>
             <div class="row">
 				<div class="col-sm">
-                    <input class="btn btn-primary" type="submit" value="Add">
-                    <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+                    {{ form.submit(class="btn btn-sm btn-primary") }}
+                    {{ form.cancel(href="/dashboard", class="btn btn-sm btn-primary") }}
                 </div>
             </div>
         </form-group>

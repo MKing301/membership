@@ -2,7 +2,7 @@
 {% block body %}
 	<div class="container">
   	{% from "includes/_formhelpers.html" import render_field %}
-  	<form action="{{ url_for('reset_request') }}" method="POST">
+  	<form action="{{ url_for('users.reset_request') }}" method="POST">
 		{{ form.csrf_token }}
     	<form-group form-group>
       		<h1 class="h3 mb-3 font-weight-normal">Request Password Reset</h1>
@@ -23,7 +23,7 @@
 			<div class="row">
 				<div class="col-sm">
 				  	<div class="form-group">
-						<button type="submit" class="btn btn-primary">Request Password Reset</button>
+						{{ form.submit(class="btn btn-sm btn-primary") }}
 					</div>
                 </div>
 			</div>
