@@ -222,22 +222,16 @@ def add_member():
         first_name_test = request.form['first_name'].title()
         last_name_test = request.form['last_name'].title()
 
-        members = db.session.query(Member).filter(Member.first_name==first_name_test)
-        try:
-            for member in members:
-                if member.first_name == first_name_test and member.last_name == last_name_test:
-                    flash('Member already exist with that first and last name.', 'warning')
-                    return redirect(url_for('main.dashboard'))
-                else:
-                    db.session.add(new_member)
-                    db.session.commit()
+        member = db.session.query(Member).filter(Member.first_name==first_name_test, Member.last_name==last_name_test).first()
+        if member:
+            flash('Member already exist with that first and last name.', 'warning')
+            return redirect(url_for('main.dashboard'))
+        else:
+            db.session.add(new_member)
+            db.session.commit()
 
-                    flash(f'{new_member.first_name} {new_member.last_name} ID{new_member.id} added!', 'success')
-                    logger.info(f'{current_user.username} added {new_member.first_name} {new_member.last_name} - Member ID: {new_member.id}.')
-                    return redirect(url_for('main.dashboard'))
-        except Exception as e:
-            logger.exception(f'Exception: {e}')
-            flash(f'{e}', 'danger')
+            flash(f'{new_member.first_name} {new_member.last_name} ID{new_member.id} added!', 'success')
+            logger.info(f'{current_user.username} added {new_member.first_name} {new_member.last_name} - Member ID: {new_member.id}.')
             return redirect(url_for('main.dashboard'))
     else:
         return render_template('add_member.html', Title="Add Member", form=form)
