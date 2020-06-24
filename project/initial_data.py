@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from database import Base, User, Member
 from datetime import datetime
+from passlib.hash import sha256_crypt
 
 
 engine = create_engine(os.environ.get('LOCAL_DB_URI_MEMBERSHIP'))
@@ -20,17 +21,17 @@ with open('/home/mfsd1809/Dev/FullStackWebDeveloper/GitRepos/membership/director
     # Iterate through rows of csv file and insert each member into db
     for row in csv_reader:
         member = Member(
-            first_name = row['first_name'],
-            last_name = row['last_name'],
-            street_num = row['street_num'],
-            street_name = row['street_name'],
-            city = row['city'],
-            _state = row['_state'],
-            postal_code = row['postal_code'],
-            contact_num = row['contact_num'],
-            email = row['email'],
-            birthdate = row['birthdate'],
-            inserted_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            first_name=row['first_name'],
+            last_name=row['last_name'],
+            street_num=row['street_num'],
+            street_name=row['street_name'],
+            city=row['city'],
+            _state=row['_state'],
+            postal_code=row['postal_code'],
+            contact_num=row['contact_num'],
+            email=row['email'],
+            birthdate=row['birthdate'],
+            inserted_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
         db.session.add(member)
         db.session.commit()
@@ -39,14 +40,14 @@ print('Initial member data inserted into database!')
 
 # Create initial user
 user = User(
-            first_name = row['first_name'],
-            last_name = row['last_name'],
-            username = row['username'],
-            email = row['email'],
-            password = row['password'],
-            role = 'admin',
-            registered_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            approved_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            first_name='first name here',
+            last_name='last name here',
+            username='username here',
+            email='email here',
+            password=sha256_crypt.hash('password here'),
+            role='admin',
+            registered_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            approved_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
         db.session.add(user)
         db.session.commit()
