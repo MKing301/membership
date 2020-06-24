@@ -263,6 +263,7 @@ def reset_password(token):
 def logout():
     """Logout the current user."""
     user = current_user
+    logger.info(f'{user.username} logged out of application.')
     user.authenticated = False
     db.session.add(user)
     db.session.commit()
