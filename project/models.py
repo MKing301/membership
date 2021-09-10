@@ -53,4 +53,5 @@ class Member(db.Model, UserMixin):
     contact_num = db.Column(db.Integer, unique=False, nullable=False)
     email = db.Column(db.String(50), unique=True, nullable=False)
     birthdate = db.Column(db.DateTime(), nullable=False)
+    age = db.Column(db.Integer, nullable=True)
     inserted_date = db.Column(db.DateTime(), nullable=False)

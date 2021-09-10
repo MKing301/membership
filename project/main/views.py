@@ -273,6 +273,7 @@ def edit_member(id):
         form.contact_num.data = member.contact_num
         form.email.data = member.email
         form.birthdate.data = member.birthdate
+        form.age.data = member.age
 
         return render_template('edit_member.html',
                                Title="Edit Member", id=id, form=form)
@@ -288,6 +289,11 @@ def edit_member(id):
         member.contact_num = request.form['contact_num']
         member.email = request.form['email'].lower()
         member.birthdate = request.form['birthdate']
+        bdate = datetime.strptime(request.form['birthdate'], '%Y-%m-%d')
+        member.age = (get_age(
+                            int(bdate.month),
+                            int(bdate.day),
+                            int(bdate.year)))
 
         db.session.commit()
 
