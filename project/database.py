@@ -62,8 +62,9 @@ class Member(Base):
     _state = Column(String, nullable=False)
     postal_code = Column(String, nullable=False)
     contact_num = Column(Integer, nullable=False)
-    email = Column(String, nullable=False)
-    birthdate = Column(DateTime, nullable=False)
+    email = Column(String, nullable=True)
+    birthdate = Column(DateTime, nullable=True)
+    age = Column(Integer, nullable=True)
     inserted_date = Column(DateTime, nullable=False)
 
 

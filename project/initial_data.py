@@ -31,6 +31,7 @@ with open('/home/mfsd1809/Dev/FullStackWebDeveloper/GitRepos/membership/director
             contact_num=row['contact_num'],
             email=row['email'],
             birthdate=row['birthdate'],
+            age=row['age'],
             inserted_date=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         )
         db.session.add(member)

@@ -273,7 +273,10 @@ def edit_member(id):
         form.contact_num.data = member.contact_num
         form.email.data = member.email
         form.birthdate.data = member.birthdate
-        form.age.data = member.age
+        form.age.data = (get_age(
+                            int(member.birthdate.month),
+                            int(member.birthdate.day),
+                            int(member.birthdate.year)))
 
         return render_template('edit_member.html',
                                Title="Edit Member", id=id, form=form)
